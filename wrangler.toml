@@ -1,0 +1,9 @@
+# Aether Studio Edge Orchestration & Emulation Config
+
+# Subdomain Router Worker Service
+# To deploy or develop, reference the respective worker config or use multi-worker paths:
+# docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+# Example environment mappings for local Miniflare emulation:
+[vars]
+ENVIRONMENT = "local-development"

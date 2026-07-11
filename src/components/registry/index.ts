@@ -1,0 +1,1 @@
+// Registry components entry

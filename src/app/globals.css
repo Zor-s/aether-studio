@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Core brand palette variables */
+  --brand-ice-blue: #d4f0fc;
+  --brand-sky-blue: #89d6fb;
+  --brand-cyan-active: #02a9f7;
+  --brand-deep-teal: #02577a;
+  --brand-dark-slate: #01303f;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Theme mappings - Light Mode */
+  --background: #f8fafc;
+  --foreground: var(--brand-dark-slate);
+  
+  --panel-bg: #ffffff;
+  --panel-border: rgba(2, 87, 122, 0.15);
+  
+  --accent-soft: var(--brand-ice-blue);
+  --accent-highlight: var(--brand-sky-blue);
+  --accent-primary: var(--brand-cyan-active);
+  --text-muted: var(--brand-deep-teal);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  /* Theme mappings - Dark Mode */
+  --background: #00121a;
+  --foreground: #f0f9ff;
+  
+  --panel-bg: var(--brand-dark-slate);
+  --panel-border: rgba(137, 214, 251, 0.2);
+  
+  --accent-soft: rgba(2, 87, 122, 0.2);
+  --accent-highlight: var(--brand-sky-blue);
+  --accent-primary: var(--brand-cyan-active);
+  --text-muted: var(--brand-sky-blue);
+}
+
+@theme {
+  /* Dynamic CSS Theme Colors mapped to classes */
+  --color-ice-blue: var(--brand-ice-blue);
+  --color-sky-blue: var(--brand-sky-blue);
+  --color-cyan-active: var(--brand-cyan-active);
+  --color-deep-teal: var(--brand-deep-teal);
+  --color-dark-slate: var(--brand-dark-slate);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel-bg);
+  --color-panel-border: var(--panel-border);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-highlight: var(--accent-highlight);
+  --color-accent-primary: var(--accent-primary);
+  --color-text-muted: var(--text-muted);
+
+  /* Spacing Scale Classes (e.g. p-xs, m-md, gap-lg) */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem;  /* 8px */
+  --spacing-md: 1rem;    /* 16px */
+  --spacing-lg: 1.5rem;  /* 24px */
+  --spacing-xl: 2rem;    /* 32px */
+  --spacing-2xl: 3rem;   /* 48px */
+
+  /* Exact Font Size Scale Classes (e.g. text-xs, text-md, text-3xl) */
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-md: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+  --font-size-2xl: 1.5rem;   /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+
+  /* Exact Custom Heights & Widths */
+  --spacing-sidebar-w: 20rem; /* 320px */
+  --spacing-header-h: 4rem;    /* 64px */
+  --spacing-sub-header-h: 3rem;/* 48px */
+
+  /* Custom Animations definition for Tailwind CSS v4 */
+  --animate-fadeIn: fadeIn 0.2s ease-out forwards;
+  --animate-scaleIn: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slideInRight: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slideDown: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar utility for sidebars and panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(2, 87, 122, 0.25);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 87, 122, 0.45);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(137, 214, 251, 0.25);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(137, 214, 251, 0.45);
+}
+
+/* Grid overlay background for the canvas workspace */
+.canvas-grid {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(2, 87, 122, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(2, 87, 122, 0.04) 1px, transparent 1px);
+}
+
+.dark .canvas-grid {
+  background-image: 
+    linear-gradient(to right, rgba(137, 214, 251, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(137, 214, 251, 0.03) 1px, transparent 1px);
 }
