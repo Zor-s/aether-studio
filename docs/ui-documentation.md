@@ -97,7 +97,7 @@ The spacing scale relies on multipliers of `4px` (`0.25rem`) to maintain perfect
 | **`space-2xl`**| `3rem` | `48px` | Outer boundaries of visual builder canvas |
 
 ### B. Typography Hierarchy (Strict Font Sizes & Weights)
-Fonts will utilize the project's standard Geist Sans and Geist Mono families. Standard font size tokens are defined below:
+Fonts will utilize the project's standard Geist Sans and Geist Mono families, as well as selected brand typography from the Google Fonts API. Standard font size tokens are defined below:
 
 | Token | CSS Font Size | Line Height | Purpose |
 | :--- | :--- | :--- | :--- |
@@ -109,7 +109,15 @@ Fonts will utilize the project's standard Geist Sans and Geist Mono families. St
 | **`text-2xl`**| `1.5rem` (24px) | `2rem` (32px) | Primary dashboard title, main builder layout title |
 | **`text-3xl`**| `1.875rem` (30px)| `2.25rem` (36px)| Builder editor logo title |
 
-### C. Standard Component Heights & Widths (Layout Constants)
+### C. Google Fonts API Typography Registry
+To support brand personalization while maintaining edge performance limits, Aether Studio integrates a searchable Google Fonts registry.
+
+1. **Supported Registry**: A curated set of 25 popular Google Fonts is available out-of-the-box (e.g. *Inter, Roboto, Poppins, Outfit, Montserrat, Playfair Display, Lora, Georgia, Space Grotesk, Syne, Roboto Mono*, etc.).
+2. **On-Demand Font Previews**: The style inspector dropdown pre-fetches and previews the fonts in real time using a combined Google Fonts stylesheet.
+3. **Workspace Canvas Invalidation**: The canvas dynamically scans active elements, filters unique custom fonts, and loads only the required families in the device view frame.
+4. **Edge Compilation `@import` Rules**: When publishing pages, the compilation engine aggregates all unique fonts used across the canvas elements and injects optimized, low-latency `@import url(...)` rules inside the head of the serialized static HTML document.
+
+### D. Standard Component Heights & Widths (Layout Constants)
 Sidebar panels and components must lock to strict pixel sizes to prevent layout shifting on viewport changes:
 
 - **Sidebar Width (Left/Right Panels)**: Exactly `320px` (`w-80`).
@@ -145,6 +153,19 @@ To give builders live visual feedback on mobile devices without relying on brows
 - **Tablet Mode**: Iframe wrapper width locked to `768px` (iPad width).
 - **Desktop Mode**: Iframe wrapper width set to `100%` width.
 
+### C. Device-Specific Style Breakpoint Overrides
+To give builders total control over their portfolio layout scaling, Aether Studio supports device-specific styling overrides.
+
+1. **Responsive Viewport Target:** Styling overrides are scoped strictly to the current active device viewport in the header bar:
+   - **Tablet Breakpoint:** Applies to viewports `<= 1024px` (`@media (max-width: 1024px)`).
+   - **Mobile Breakpoint:** Applies to viewports `<= 640px` (`@media (max-width: 640px)`).
+2. **Inheritance (Cascading) Rules:** Style properties cascade downwards from larger viewports. A mobile component inherits its tablet style override; if no tablet override exists, it inherits the base desktop style.
+3. **Inspector UI Indicators:** When a builder adjusts styles while tablet or mobile preview is active:
+   - A warning banner at the top of the style inspector reminds them they are editing overrides.
+   - Any property containing an override displays with a highlighted label.
+   - A **Reset** control appears next to overridden properties to let the builder clear the override and inherit the desktop value again.
+4. **Edge Compiler Specificity:** The HTML compiler maps active styling overrides (including margins, paddings, borders, colors, and typography) to media-query-wrapped CSS rules targeting unique element IDs (e.g. `#el-id`). This guarantees the overrides take precedence over base inline styles and Tailwind utility classes.
+
 ---
 
 ## 4. Components UI Inventory (Workspace Outline)
@@ -154,7 +175,8 @@ To structure our React components before adding active data models or database c
 ```
 src/components/builder/
 ├── header.tsx              # Save status, theme toggle, nav links, and Publish
-├── left-sidebar.tsx        # Drag-and-drop Element Registry panel
+├── left-sidebar.tsx        # Toggleable Element Registry and Layers panels
+├── component-tree.tsx      # Accessible page-root component hierarchy and node actions
 ├── right-sidebar.tsx       # Style Inspector & Page Settings panel
 ├── workspace-canvas.tsx    # Design canvas with dropzone guidelines
 ├── project-card.tsx        # Glassmorphic project item widget card
@@ -165,6 +187,11 @@ src/components/builder/
 1. **Layout Wrapper Limits**: Always use `flex flex-col h-screen overflow-hidden` on the main page to freeze page-scroll and keep sidebars locked while the canvas handles its own scrolling.
 2. **Interactive States**: Every button or selection block must transition using `transition-all duration-200 ease-in-out` with subtle scale highlights or background shifts.
 3. **Outline States**: Elements inside the canvas must render a thin, dotted Sky Blue outline (`border border-dashed border-sky-blue`) during editing that changes to a solid Primary Cyan border when selected.
+4. **History Stack Dropdown**: Integrated directly into the top header navbar adjacent to the Undo/Redo buttons. Renders a compact state selector pill (`History (X/Y)`) that opens an overlay dropdown menu containing scrollable time-travel steps dynamically labeled based on elements added, deleted, edited, or reordered.
+5. **Left Sidebar Hover Previews**: Hovering any registry element card triggers a floating preview popover adjacent to the sidebar (`left-full ml-sm w-[280px]`). The popover uses the `animate-scaleIn` entry transition and centers its `top` position relative to the hovered item, clamped dynamically to remain within the visible vertical container height. It renders specific HTML mockups with custom, theme-compliant CSS keyframe animations.
+6. **Layers Panel**: The sidebar's Layers toggle exposes a page-root tree. Selecting a node selects its canvas element; nodes can be renamed, duplicated, and moved relative to siblings. Parent-child relationships use `parentId`, and expandable rows expose nested structures when present.
+7. **Custom Style Dropdowns**: To prevent native OS select element rendering glitches under browser zoom-out levels, and to maintain theme-palette compliance across dark/light modes, all styling selection controls in the sidebar must utilize custom DOM dropdown menus (`CustomSelect`) with absolute-positioned panels and full-screen backdrop click overlays for close handling.
+
 
 ---
 
@@ -198,3 +225,27 @@ Our plan to build the UI proceeds step-by-step:
 > *   Use `max-w-[1152px]` instead of `max-w-6xl`
 > *   Use `max-w-[1280px]` instead of `max-w-7xl`
 
+---
+
+## 7. Container Layout & Alignment Settings
+
+To maximize layout flexibility, the **Section Container** and **Standard Wrapper** components support advanced flex alignment options.
+
+### A. Layout Settings Specification
+
+| Style Parameter | Property Key | Values | Tailwind CSS Utility | Compiled CSS Fallback |
+| :--- | :--- | :--- | :--- | :--- |
+| **Flex Direction** | `direction` | `"col"` (default), `"row"` | `flex-col`, `flex-row` | `flex-direction: column / row` |
+| **Justify Content** | `justify` | `"center"` (default), `"start"`, `"end"`, `"between"` | `justify-center`, `justify-start`, `justify-end`, `justify-between` | `justify-content: center / flex-start / flex-end / space-between` |
+| **Align Items** | `alignItems` | `"center"` (default), `"start"`, `"end"`, `"stretch"` | `items-center`, `items-start`, `items-end`, `items-stretch` | `align-items: center / flex-start / flex-end / stretch` |
+| **Flex Item Gap** | `gap` | `"space-none"`, `"space-xs"`, `"space-sm"`, `"space-md"` (default), `"space-lg"`, `"space-xl"`, `"space-2xl"` | `gap-0`, `gap-xs`, `gap-sm`, `gap-md`, `gap-lg`, `gap-xl`, `gap-2xl` | `gap: 0 / 0.25rem / 0.5rem / 1rem / 1.5rem / 2rem / 3rem` |
+| **Width Limit** | `widthMode` | `"full"` (default), `"boxed-sm"`, `"boxed-md"`, `"boxed-lg"`, `"boxed-xl"` | `w-full`, `max-w-[384px] mx-auto w-full`, `max-w-[448px] mx-auto w-full`, `max-w-[512px] mx-auto w-full`, `max-w-[576px] mx-auto w-full` | `max-width: 100% / 384px / 448px / 512px / 576px` |
+| **Minimum Height** | `minHeight` | `"auto"` (default), `"screen"`, `"h-300"`, `"h-500"`, `"h-700"` | `min-h-auto`, `min-h-screen`, custom style mapping | `min-height: auto / 100vh / 300px / 500px / 700px` |
+
+### B. Responsive Behaviors & Compilation
+All advanced layout controls inherit and cascade normally from Desktop through to Tablet and Mobile viewport settings. Tablet and Mobile overrides generate media-query targeted style rules referencing unique element IDs (e.g. `#el-id`) to override utility class defaults, ensuring exact responsive fidelity.
+
+### C. Spacing and Margins Constraints
+To prevent horizontal overflow and layout breaking inside the visual canvas and compiled pages, layout components (`section`, `container`, and `grid-2`) enforce vertical-only margin utilities (`my-none` to `my-2xl`) rather than all-sides margin utilities (`m-none` to `m-2xl`):
+1. **Overflow Prevention**: Since layout components default to `width: 100%`, adding left and right margins would result in a total width of `100% + horizontal margins`, which pushes the elements past the viewport boundaries. Vertical-only margins (`my-`) keep the layout container centered and perfectly fitted.
+2. **Centering Rules Preservation**: Boxed layout modes use `mx-auto` (horizontal margin auto) to center the container within the workspace. Enforcing vertical-only margins ensures that custom margin adjustments do not override or break `mx-auto`.

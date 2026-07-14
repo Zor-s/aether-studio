@@ -26,15 +26,15 @@ This document details the architecture, file structure, code conventions, and ma
 │   │   ├── /builder                 # Drag & drop layout tree manipulation widgets (including ProjectCard)
 │   │   └── /registry                # Token-to-inline style compilers
 │   ├── /lib                         # Shared services & utility modules
-│   │   ├── /compiler                # HTML compilation, Turnstile injection, DOMPurify sanitization
+│   │   ├── /compiler                # HTML compilation & DOMPurify sanitization (Turnstile/media elements disabled in basic-only mode)
 │   │   ├── /db                      # Relational Database connection wrapper (Turso/Neon)
 │   │   ├── /kv                      # Vercel KV cache & backup client
-│   │   ├── /r2                      # AWS SDK R2 Client bucket integration
+│   │   ├── /r2                      # AWS SDK R2 Client bucket integration (reserved for basic-only assets)
 │   │   └── /telemetry               # Sentry exceptions and custom tracing helpers
 │   └── proxy.ts                     # Next.js 16 pre-request interceptor boundary
 ├── /workers                         # Cloudflare Edge Worker microservices
 │   ├── /subdomain-router            # Routing engine using Cache API (caches.default)
-│   └── /edge-forms                  # Turnstile-validated contact submissions processor
+│   └── /edge-forms                  # Edge data submissions processor (Turnstile/media disabled in basic-only mode)
 ├── eslint.config.mjs                # ESLint code styling configuration
 ├── next.config.ts                   # Next.js bundler and compiler settings
 ├── postcss.config.mjs               # PostCSS styles compiler configurations
@@ -91,6 +91,9 @@ sequenceDiagram
   channel.postMessage({ type: 'STATE_MUTATED', timestamp: Date.now() });
   ```
 - **KV Synchronizer**: Write drafts to Vercel KV using a 15-second interaction debounce. Implement `visibilitychange` and `beforeunload` events to trigger immediate, non-blocking synchronous flushes before the browser tab closes.
+- **Undo/Redo & Time-Travel Engine**: Maintains a chronological state history stack of visual mutations on the canvas. Supports global keyboard hotkeys (`Cmd/Ctrl + Z` for undo, `Cmd/Ctrl + Shift + Z` or `Cmd/Ctrl + Y` for redo) with automatic input-filtering overrides to prevent collisions during text editing. Diffs between successive state elements are compiled on-the-fly to generate descriptive labels (e.g., "Add headline", "Delete button", "Reorder Blocks") for chronological state time travel.
+- **Device Style Breakpoint Overrides**: Merges nested styling overrides (`mobile` and `tablet` objects) dynamically on the client canvas depending on the active view size. At publish-time, the compiler maps these to media-query-wrapped CSS rules targeting element IDs, ensuring maximum specificity over Tailwind classes and base styles.
+- **Component Tree Hierarchy**: Canvas elements may carry an optional display `name` and `parentId`. The Layers panel renders these relationships beneath a page root, keeps its selection synchronized with the canvas, and commits renaming, duplication, and sibling-only reordering through the same history stack. Deleting a parent removes its descendants to prevent orphaned nodes.
 
 ### C. Cloudflare R2 & Media Management
 - **Pre-signed Direct Uploads**: Never upload images through Next.js API routes or base64 serialization in `localStorage`. Request a pre-signed URL from Next.js (`/api/upload-url`) and have the browser perform a direct PUT request to the R2 bucket.
@@ -206,6 +209,5 @@ Do not build complex features (such as custom sub-routing configurations or mult
 
 #### 5. Principle of Least Privilege
 Apply restricted permissions to database queries, pre-signed R2 uploads, and Cloudflare Worker environments. Only expose the absolute minimum data needed by the client. For example, API response schemas must filter out internal session tokens, user emails, or bucket configuration parameters.
-
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Header,
   LeftSidebar,
@@ -55,32 +55,41 @@ const INITIAL_ELEMENTS: CanvasElement[] = [
   },
   {
     id: "el-4",
-    type: "image",
-    category: "media",
-    content: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop",
+    type: "divider",
+    category: "basic",
+    content: "",
     styles: {
-      margin: "space-xl",
+      margin: "space-md",
       padding: "space-none",
-      borderRadius: "rounded-2xl",
+      borderStyle: "solid",
+      borderWidth: "1",
+      borderColor: "#02577a",
     },
   },
   {
     id: "el-5",
-    type: "contact-form",
-    category: "forms",
-    content: "Form Contact Element",
+    type: "blockquote",
+    category: "basic",
+    content: "Building clean, high-performance web applications at edge memory scales.",
     styles: {
+      fontSize: "text-md",
+      color: "#02577a",
       margin: "space-xl",
-      padding: "space-none",
-      borderRadius: "rounded-2xl",
+      padding: "space-sm",
+      borderRadius: "rounded-xl",
+      borderStyle: "solid",
+      borderWidth: "4",
+      borderColor: "#02a9f7",
     },
   },
   {
     id: "el-6",
-    type: "turnstile",
-    category: "forms",
-    content: "Bot Protection",
+    type: "list",
+    category: "basic",
+    content: "Cloudflare Edge network integration\nOptimized server-side HTML rendering\nLightweight responsive layout controls",
     styles: {
+      fontSize: "text-sm",
+      color: "#02577a",
       margin: "space-md",
       padding: "space-none",
     },
@@ -130,6 +139,10 @@ export default function DashboardPage() {
   const [publishStep, setPublishStep] = useState(0); // 0: inactive, 1: serialization, 2: R2 upload, 3: cache invalidate, 4: live
   const [copied, setCopied] = useState(false);
   
+  // Compilation output inspection state
+  const [compiledHtml, setCompiledHtml] = useState<string>("");
+  const [viewHtmlOpen, setViewHtmlOpen] = useState(false);
+  
   // Undo/Redo history buffers
   const [canvasElements, setCanvasElements] = useState<CanvasElement[]>(INITIAL_ELEMENTS);
   const [history, setHistory] = useState<CanvasElement[][]>([INITIAL_ELEMENTS]);
@@ -143,7 +156,7 @@ export default function DashboardPage() {
     setCanvasElements(newElements);
   };
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       const prevIndex = historyIndex - 1;
       setHistoryIndex(prevIndex);
@@ -154,9 +167,9 @@ export default function DashboardPage() {
         setSelectedElement(synced || null);
       }
     }
-  };
+  }, [historyIndex, history, selectedElement]);
 
-  const handleRedo = () => {
+  const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       const nextIndex = historyIndex + 1;
       setHistoryIndex(nextIndex);
@@ -167,7 +180,65 @@ export default function DashboardPage() {
         setSelectedElement(synced || null);
       }
     }
-  };
+  }, [historyIndex, history, selectedElement]);
+
+  const handleJumpToHistoryStep = useCallback((index: number) => {
+    if (index >= 0 && index < history.length) {
+      setHistoryIndex(index);
+      setCanvasElements(history[index]);
+      // Sync selected element reference
+      if (selectedElement) {
+        const synced = history[index].find((el) => el.id === selectedElement.id);
+        setSelectedElement(synced || null);
+      }
+      showToast(`Jumped to history step #${index + 1}`, "info");
+    }
+  }, [history, selectedElement]);
+
+  // Keyboard Shortcuts Hook/Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is editing inputs/textareas or contentEditable areas
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (selectedElement) {
+          e.preventDefault();
+          setSelectedElement(null);
+          showToast("Deselected component", "info");
+        }
+        return;
+      }
+
+      const isMac = typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modifier && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+          showToast("Redone last action", "info");
+        } else {
+          handleUndo();
+          showToast("Undone last action", "info");
+        }
+      } else if (modifier && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleRedo();
+        showToast("Redone last action", "info");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [historyIndex, history, selectedElement, handleUndo, handleRedo]);
 
   // Select canvas component handler
   const handleSelectElement = (element: CanvasElement) => {
@@ -255,40 +326,40 @@ export default function DashboardPage() {
           styles: { fontSize: "text-xs", color: "#02a9f7", margin: "space-sm", align: "left", borderRadius: "rounded-md" },
         };
         break;
-      case "image":
+      case "subheading":
         newEl = {
           id: baseId,
-          type: "image",
-          category: "media",
-          content: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop",
-          styles: { margin: "space-sm", borderRadius: "rounded-lg" },
+          type: "subheading",
+          category: "basic",
+          content: "Secondary Subheading Text",
+          styles: { fontSize: "text-lg", color: "#02577a", margin: "space-sm", align: "left" },
         };
         break;
-      case "video":
+      case "blockquote":
         newEl = {
           id: baseId,
-          type: "video",
-          category: "media",
-          content: "",
-          styles: { margin: "space-sm", borderRadius: "rounded-lg" },
+          type: "blockquote",
+          category: "basic",
+          content: "This is a blockquote element representing a highlighted quote or testimonial.",
+          styles: { fontSize: "text-md", color: "#02577a", margin: "space-md", padding: "space-sm", borderStyle: "solid", borderWidth: "4", borderColor: "#02a9f7" },
         };
         break;
-      case "contact-form":
+      case "list":
         newEl = {
           id: baseId,
-          type: "contact-form",
-          category: "forms",
-          content: "",
-          styles: { margin: "space-md", borderRadius: "rounded-xl" },
+          type: "list",
+          category: "basic",
+          content: "List item bullet point one\nList item bullet point two\nList item bullet point three",
+          styles: { fontSize: "text-sm", color: "#02577a", margin: "space-sm" },
         };
         break;
-      case "turnstile":
+      case "divider":
         newEl = {
           id: baseId,
-          type: "turnstile",
-          category: "forms",
+          type: "divider",
+          category: "basic",
           content: "",
-          styles: { margin: "space-sm" },
+          styles: { margin: "space-md", borderStyle: "solid", borderWidth: "1", borderColor: "#02a9f7" },
         };
         break;
       default:
@@ -302,31 +373,41 @@ export default function DashboardPage() {
   };
 
   // Select stock asset / replace image handler
-  const handleSelectAsset = (url: string) => {
-    if (selectedElement && selectedElement.type === "image") {
-      handleUpdateElement(selectedElement.id, { content: url });
-      showToast("Updated image block with selected stock photo!", "success");
-    } else {
-      const baseId = `el-${Date.now()}`;
-      const newEl: CanvasElement = {
-        id: baseId,
-        type: "image",
-        category: "media",
-        content: url,
-        styles: { margin: "space-sm", borderRadius: "rounded-lg" },
-      };
-      commitChanges([...canvasElements, newEl]);
-      setSelectedElement(newEl);
-      showToast("Added new stock image block to canvas!", "success");
-    }
+  const handleSelectAsset = (url?: string) => {
+    // Asset selection is disabled in basic-only version
+    console.warn("Asset selection is disabled in this version:", url);
   };
 
   // Delete element handler
   const handleDeleteElement = (id: string) => {
-    const nextElements = canvasElements.filter((el) => el.id !== id);
+    const deletedIds = new Set([id]);
+    let foundDescendant = true;
+
+    while (foundDescendant) {
+      foundDescendant = false;
+      canvasElements.forEach((element) => {
+        if (element.parentId && deletedIds.has(element.parentId) && !deletedIds.has(element.id)) {
+          deletedIds.add(element.id);
+          foundDescendant = true;
+        }
+      });
+    }
+
+    const nextElements = canvasElements.filter((element) => !deletedIds.has(element.id));
     commitChanges(nextElements);
-    if (selectedElement?.id === id) {
+    if (selectedElement && deletedIds.has(selectedElement.id)) {
       setSelectedElement(null);
+    }
+  };
+
+  const handleRenameElement = (id: string, name: string) => {
+    const updated = canvasElements.map((element) => (
+      element.id === id ? { ...element, name } : element
+    ));
+    commitChanges(updated);
+
+    if (selectedElement?.id === id) {
+      setSelectedElement((current) => current ? { ...current, name } : current);
     }
   };
 
@@ -339,6 +420,7 @@ export default function DashboardPage() {
     const clone: CanvasElement = {
       ...original,
       id: `el-${Date.now()}`,
+      name: original.name ? `${original.name} copy` : undefined,
       styles: { ...original.styles },
     };
 
@@ -353,8 +435,15 @@ export default function DashboardPage() {
     const idx = canvasElements.findIndex((el) => el.id === id);
     if (idx === -1) return;
 
-    const newIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (newIdx < 0 || newIdx >= canvasElements.length) return;
+    const element = canvasElements[idx];
+    const siblingIndexes = canvasElements
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.parentId === element.parentId)
+      .map(({ index }) => index);
+    const siblingPosition = siblingIndexes.indexOf(idx);
+    const nextSiblingPosition = direction === "up" ? siblingPosition - 1 : siblingPosition + 1;
+    const newIdx = siblingIndexes[nextSiblingPosition];
+    if (newIdx === undefined) return;
 
     const nextElements = [...canvasElements];
     const [moved] = nextElements.splice(idx, 1);
@@ -367,6 +456,7 @@ export default function DashboardPage() {
     const sourceIdx = canvasElements.findIndex((el) => el.id === sourceId);
     const targetIdx = canvasElements.findIndex((el) => el.id === targetId);
     if (sourceIdx === -1 || targetIdx === -1) return;
+    if (canvasElements[sourceIdx].parentId !== canvasElements[targetIdx].parentId) return;
 
     const nextElements = [...canvasElements];
     const [moved] = nextElements.splice(sourceIdx, 1);
@@ -377,9 +467,33 @@ export default function DashboardPage() {
   };
 
   // Publish flow simulation
-  const handlePublish = () => {
+  const handlePublish = async () => {
     setIsPublishing(true);
     setPublishStep(1);
+
+    try {
+      const response = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ elements: canvasElements, pageSettings }),
+      });
+      
+      const result = await response.json();
+      if (result.success && result.data?.html) {
+        setCompiledHtml(result.data.html);
+      } else {
+        showToast(result.error?.message || "Failed to serialize visual canvas.", "warning");
+      }
+    } catch (err) {
+      console.warn("Serialization endpoint failed, falling back locally:", err);
+      showToast("Serialization endpoint lookup failed. Using local compiler fallback.", "info");
+      try {
+        const { compileLayout } = await import('@/lib/compiler');
+        setCompiledHtml(compileLayout(canvasElements, pageSettings));
+      } catch (compileErr) {
+        console.error("Local fallback compile failed:", compileErr);
+      }
+    }
 
     setTimeout(() => {
       setPublishStep(2);
@@ -406,6 +520,10 @@ export default function DashboardPage() {
         redoDisabled={historyIndex === history.length - 1}
         onPublish={handlePublish}
         onMenuToggle={() => setSidebarOpen(true)}
+        historyIndex={historyIndex}
+        historyLength={history.length}
+        historyList={history}
+        onJumpToHistoryStep={handleJumpToHistoryStep}
       />
 
       {/* Editor Body Wrapper */}
@@ -416,6 +534,15 @@ export default function DashboardPage() {
             <LeftSidebar
               onAddElement={handleAddElement}
               onSelectAsset={handleSelectAsset}
+              canvasElements={canvasElements}
+              selectedElementId={selectedElement?.id || null}
+              onSelectElement={(id) => {
+                const element = canvasElements.find((item) => item.id === id);
+                if (element) handleSelectElement(element);
+              }}
+              onRenameElement={handleRenameElement}
+              onDuplicateElement={handleDuplicateElement}
+              onMoveElement={handleMoveElement}
             />
           </div>
         )}
@@ -442,11 +569,14 @@ export default function DashboardPage() {
         {!previewMode && (
           <div className="hidden lg:flex">
             <RightSidebar
+              activeDevice={activeDevice}
               selectedElement={selectedElement}
               onUpdateElement={handleUpdateElement}
               pageSettings={pageSettings}
               onUpdatePageSettings={handleUpdatePageSettings}
               onShowToast={showToast}
+              onDeselect={() => setSelectedElement(null)}
+              canvasElements={canvasElements}
             />
           </div>
         )}
@@ -490,16 +620,28 @@ export default function DashboardPage() {
                     handleSelectAsset(url);
                     setSidebarOpen(false); // Auto close drawer on selection
                   }}
+                  canvasElements={canvasElements}
+                  selectedElementId={selectedElement?.id || null}
+                  onSelectElement={(id) => {
+                    const element = canvasElements.find((item) => item.id === id);
+                    if (element) handleSelectElement(element);
+                  }}
+                  onRenameElement={handleRenameElement}
+                  onDuplicateElement={handleDuplicateElement}
+                  onMoveElement={handleMoveElement}
                 />
               </div>
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden [&>aside]:border-l-0 [&>aside]:w-full">
                 <RightSidebar
+                  activeDevice={activeDevice}
                   selectedElement={selectedElement}
                   onUpdateElement={handleUpdateElement}
                   pageSettings={pageSettings}
                   onUpdatePageSettings={handleUpdatePageSettings}
                   onShowToast={showToast}
+                  onDeselect={() => setSelectedElement(null)}
+                  canvasElements={canvasElements}
                 />
               </div>
             )}
@@ -632,6 +774,14 @@ export default function DashboardPage() {
             <div className="flex justify-end gap-sm mt-xs border-t border-panel-border pt-md">
               {publishStep === 4 ? (
                 <>
+                  <button
+                    onClick={() => {
+                      setViewHtmlOpen(true);
+                    }}
+                    className="h-10 px-md rounded-lg text-xs font-bold text-cyan-active bg-cyan-active/10 hover:bg-cyan-active/15 flex items-center justify-center transition-all duration-200 cursor-pointer"
+                  >
+                    View HTML
+                  </button>
                   <a
                     href="https://alexmercer.aether.studio"
                     target="_blank"
@@ -659,6 +809,54 @@ export default function DashboardPage() {
                   Deploying...
                 </button>
               )}
+            </div>
+
+          </div>
+        </div>
+      )}
+      {/* View HTML Code Modal Overlay */}
+      {viewHtmlOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-md animate-fadeIn">
+          <div className="bg-panel border border-panel-border rounded-2xl w-full max-w-[672px] shadow-2xl p-md sm:p-lg flex flex-col gap-md relative overflow-hidden h-[calc(100vh-4rem)]">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-start border-b border-panel-border pb-md shrink-0">
+              <div className="flex flex-col">
+                <h3 className="text-md font-bold text-foreground">Compiled R2 HTML Build Source</h3>
+                <p className="text-[11px] text-text-muted">Edge-optimized static layout stream with injected Google Fonts import header.</p>
+              </div>
+              <button 
+                onClick={() => setViewHtmlOpen(false)}
+                className="text-text-muted hover:text-foreground cursor-pointer transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Code editor / container (Scrollable) */}
+            <div className="flex-1 overflow-auto bg-dark-slate border border-panel-border/80 rounded-xl p-md font-mono text-[10px] text-cyan-active/90 select-all custom-scrollbar">
+              <pre className="whitespace-pre">{compiledHtml}</pre>
+            </div>
+
+            {/* Footer controls */}
+            <div className="flex justify-end items-center gap-sm border-t border-panel-border pt-md shrink-0">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(compiledHtml);
+                  showToast("Copied full HTML payload to clipboard!", "success");
+                }}
+                className="h-9 px-md rounded-lg text-xs font-bold text-white bg-cyan-active hover:bg-cyan-active/95 flex items-center justify-center shadow-md shadow-cyan-active/15 transition-all cursor-pointer"
+              >
+                Copy Code
+              </button>
+              <button
+                onClick={() => setViewHtmlOpen(false)}
+                className="h-9 px-md rounded-lg text-xs font-semibold border border-panel-border text-text-muted hover:bg-accent-soft hover:text-foreground transition-all cursor-pointer"
+              >
+                Close
+              </button>
             </div>
 
           </div>

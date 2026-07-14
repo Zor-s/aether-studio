@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import type { CanvasElement } from "./workspace-canvas";
 
 interface HeaderProps {
   activeDevice: "desktop" | "tablet" | "mobile";
@@ -12,6 +13,10 @@ interface HeaderProps {
   redoDisabled?: boolean;
   onPublish?: () => void;
   onMenuToggle?: () => void;
+  historyIndex?: number;
+  historyLength?: number;
+  historyList?: CanvasElement[][];
+  onJumpToHistoryStep?: (index: number) => void;
 }
 
 export default function Header({
@@ -25,18 +30,29 @@ export default function Header({
   redoDisabled = false,
   onPublish = () => {},
   onMenuToggle = () => {},
+  historyIndex = 0,
+  historyLength = 1,
+  historyList = [],
+  onJumpToHistoryStep = () => {},
 }: HeaderProps) {
   const [syncStatus, setSyncStatus] = useState<"synced" | "saving">("synced");
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window !== "undefined") {
-      const storedTheme = localStorage.getItem("theme");
-      if (storedTheme === "dark" || storedTheme === "light") {
-        return storedTheme;
-      }
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const [historyDropdownOpen, setHistoryDropdownOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    let activeTheme: "light" | "dark" = "light";
+    if (storedTheme === "dark" || storedTheme === "light") {
+      activeTheme = storedTheme;
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      activeTheme = prefersDark ? "dark" : "light";
     }
-    return "light";
-  });
+    const timer = setTimeout(() => {
+      setTheme(activeTheme);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -173,7 +189,7 @@ export default function Header({
       <div className="flex items-center gap-xs sm:gap-sm">
         {/* Undo/Redo (Hidden in preview mode) */}
         {!previewMode && (
-          <div className="hidden sm:flex items-center gap-1 border-r border-panel-border pr-sm">
+          <div className="hidden sm:flex items-center gap-1 border-r border-panel-border pr-sm relative">
             <button
               onClick={() => {
                 onUndo();
@@ -183,7 +199,7 @@ export default function Header({
               className={`p-xs rounded-lg text-text-muted hover:bg-accent-soft hover:text-foreground transition-all duration-200 ${
                 undoDisabled ? "opacity-35 cursor-not-allowed hover:bg-transparent" : "cursor-pointer"
               }`}
-              title="Undo Action"
+              title="Undo Action (⌘Z / Ctrl+Z)"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
@@ -199,13 +215,74 @@ export default function Header({
               className={`p-xs rounded-lg text-text-muted hover:bg-accent-soft hover:text-foreground transition-all duration-200 ${
                 redoDisabled ? "opacity-35 cursor-not-allowed hover:bg-transparent" : "cursor-pointer"
               }`}
-              title="Redo Action"
+              title="Redo Action (⌘Y / Ctrl+Y)"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.934 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.334-4z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.934 12.8a1 1 0 000-1.6l-5.334-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.334-4z" />
               </svg>
             </button>
+
+            {historyLength > 1 && (
+              <div className="relative ml-xs">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHistoryDropdownOpen(!historyDropdownOpen);
+                  }}
+                  className="flex items-center gap-xs text-[10px] font-bold text-text-muted hover:text-cyan-active transition-colors duration-200 bg-background/50 hover:bg-background border border-panel-border rounded-lg px-sm py-[4px] cursor-pointer"
+                  title="View edit history stack"
+                >
+                  <span>History ({historyIndex + 1}/{historyLength})</span>
+                  <svg className={`w-3 h-3 transition-transform duration-200 ${historyDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {historyDropdownOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40 cursor-default"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHistoryDropdownOpen(false);
+                      }}
+                    />
+                    {/* Dropdown Menu */}
+                    <div className="absolute top-[32px] right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col w-[200px] overflow-hidden animate-fadeIn">
+                      <div className="px-sm py-xs border-b border-panel-border bg-background/60">
+                        <span className="text-[9px] font-bold text-foreground uppercase tracking-widest">Workspace History</span>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto custom-scrollbar p-xs flex flex-col gap-[2px] bg-panel">
+                        {historyList.map((stateElements, idx) => {
+                          const isActive = idx === historyIndex;
+                          const label = getHistoryActionLabel(historyList[idx - 1], stateElements);
+                          return (
+                            <button
+                              key={idx}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onJumpToHistoryStep(idx);
+                                setHistoryDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-sm py-[6px] rounded-lg text-[10px] font-medium transition-colors cursor-pointer flex items-center justify-between ${
+                                isActive
+                                  ? "bg-cyan-active/10 text-cyan-active font-bold"
+                                  : "text-foreground hover:bg-accent-soft hover:text-cyan-active"
+                              }`}
+                            >
+                              <span className="truncate max-w-[130px]">{label}</span>
+                              <span className="text-[8px] text-text-muted">#{idx + 1}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -280,4 +357,34 @@ export default function Header({
       </div>
     </header>
   );
+}
+
+// Helper to determine active action label for history steps
+function getHistoryActionLabel(prev: CanvasElement[] | undefined, curr: CanvasElement[]): string {
+  if (!prev) return "Initial State";
+  
+  if (curr.length > prev.length) {
+    const added = curr.find(c => !prev.some(p => p.id === c.id));
+    return added ? `Add ${added.type}` : "Add Element";
+  }
+  
+  if (curr.length < prev.length) {
+    const deleted = prev.find(p => !curr.some(c => c.id === p.id));
+    return deleted ? `Delete ${deleted.type}` : "Delete Element";
+  }
+  
+  const orderChanged = curr.some((c, idx) => prev[idx] && prev[idx].id !== c.id);
+  if (orderChanged) {
+    return "Reorder Blocks";
+  }
+  
+  for (let i = 0; i < curr.length; i++) {
+    const c = curr[i];
+    const p = prev.find(x => x.id === c.id);
+    if (p && JSON.stringify(c) !== JSON.stringify(p)) {
+      return `Edit ${c.type}`;
+    }
+  }
+  
+  return "Modify Page";
 }
