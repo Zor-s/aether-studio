@@ -173,14 +173,31 @@ To give builders total control over their portfolio layout scaling, Aether Studi
 To structure our React components before adding active data models or database connections, we split the UI into clear modules:
 
 ```
-src/components/builder/
-├── header.tsx              # Save status, theme toggle, nav links, and Publish
-├── left-sidebar.tsx        # Toggleable Element Registry and Layers panels
-├── component-tree.tsx      # Accessible page-root component hierarchy and node actions
-├── right-sidebar.tsx       # Style Inspector & Page Settings panel
-├── workspace-canvas.tsx    # Design canvas with dropzone guidelines
-├── project-card.tsx        # Glassmorphic project item widget card
-└── dashboard-navbar.tsx    # Mobile-responsive slide-out sheet drawer
+src/
+├── components/
+│   ├── builder/
+│   │   ├── header.tsx              # Save status, theme toggle, nav links, and Publish
+│   │   ├── left-sidebar.tsx        # Toggleable Element Registry and Layers panels
+│   │   ├── component-tree.tsx      # Accessible page-root component hierarchy and node actions
+│   │   ├── right-sidebar.tsx       # Tab controller for styling & page configurations
+│   │   ├── right-sidebar/          # Subcomponents for right-sidebar tabs
+│   │   │   ├── custom-select.tsx   # Dropdown menu wrapper
+│   │   │   ├── page-settings-tab.tsx  # Global SEO, custom JS, and brand theme configurations
+│   │   │   ├── style-inspector-tab.tsx # Layout, padding/margin overrides, typography, and border controls
+│   │   │   └── content-inspector-tab.tsx # Parent containers and element label settings
+│   │   ├── project-card.tsx        # Glassmorphic project item widget card
+│   │   └── dashboard-navbar.tsx    # Mobile-responsive slide-out sheet drawer
+│   └── registry/                   # Component registry configurations
+│       ├── index.ts                # Main entrypoint exporting configuration helpers
+│       ├── registry-elements.tsx   # Component schemas and tags definitions
+│       └── preview-mockups.tsx     # Custom SVG templates and animations for registry hover cards
+├── hooks/                          # Modular state hooks
+│   ├── use-canvas-state.ts         # Handles undo/redo, element CRUD, and shortcut keyboard listeners
+│   ├── use-sync-state.ts           # Handles local storage debounced autosave and tab BroadcastChannel syncing
+│   ├── use-publish-state.ts        # Handles server api publish orchestration
+│   └── use-toast.ts                # Handles toast alert states
+└── types/
+    └── builder.ts                  # Shared types contracts (CanvasElement, PageSettings, Toast)
 ```
 
 ### A. Consistency Rules (Guarding Layout Quality)

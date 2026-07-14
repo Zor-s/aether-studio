@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import type { CanvasElement } from "./workspace-canvas";
+import { CanvasElement } from "@/types/builder";
 
 interface HeaderProps {
   activeDevice: "desktop" | "tablet" | "mobile";

@@ -5,6 +5,5 @@ export { default as WorkspaceCanvas } from "./workspace-canvas";
 export { default as DashboardNavbar } from "./dashboard-navbar";
 export { default as ProjectCard } from "./project-card";
 export { default as ToastContainer } from "./toast";
-export type { Toast } from "./toast";
-export type { CanvasElement } from "./workspace-canvas";
+export type { Toast, CanvasElement, PageSettings } from "@/types/builder";
 

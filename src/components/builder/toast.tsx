@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-
-export interface Toast {
-  id: string;
-  message: string;
-  type: "success" | "warning" | "info";
-}
+import { Toast } from "@/types/builder";
 
 interface ToastProps {
   toasts: Toast[];

@@ -1,76 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-
-export interface CanvasElement {
-  id: string;
-  name?: string;
-  parentId?: string;
-  type: string;
-  content: string;
-  category: "layout" | "basic" | "media" | "forms";
-  styles: {
-    padding?: string;
-    margin?: string;
-    fontSize?: string;
-    color?: string;
-    borderRadius?: string;
-    align?: "left" | "center" | "right";
-    fontWeight?: string;
-    letterSpacing?: string;
-    borderStyle?: string;
-    borderWidth?: string;
-    borderColor?: string;
-    fontFamily?: string;
-    direction?: string;
-    justify?: string;
-    alignItems?: string;
-    gap?: string;
-    widthMode?: string;
-    minHeight?: string;
-    mobile?: {
-      padding?: string;
-      margin?: string;
-      fontSize?: string;
-      color?: string;
-      borderRadius?: string;
-      align?: "left" | "center" | "right";
-      fontWeight?: string;
-      letterSpacing?: string;
-      borderStyle?: string;
-      borderWidth?: string;
-      borderColor?: string;
-      fontFamily?: string;
-      direction?: string;
-      justify?: string;
-      alignItems?: string;
-      gap?: string;
-      widthMode?: string;
-      minHeight?: string;
-    };
-    tablet?: {
-      padding?: string;
-      margin?: string;
-      fontSize?: string;
-      color?: string;
-      borderRadius?: string;
-      align?: "left" | "center" | "right";
-      fontWeight?: string;
-      letterSpacing?: string;
-      borderStyle?: string;
-      borderWidth?: string;
-      borderColor?: string;
-      fontFamily?: string;
-      direction?: string;
-      justify?: string;
-      alignItems?: string;
-      gap?: string;
-      widthMode?: string;
-      minHeight?: string;
-    };
-  };
-  link?: string;
-}
+import { CanvasElement } from "@/types/builder";
+import { getStyleClasses, getStyleProps } from "@/lib/compiler/style-utils";
 
 interface WorkspaceCanvasProps {
   activeDevice: "desktop" | "tablet" | "mobile";
@@ -139,17 +71,6 @@ export default function WorkspaceCanvas({
     ? `https://fonts.googleapis.com/css2?family=${uniqueFonts.map(f => `${encodeURIComponent(f)}:wght@300;400;500;600;700;800`).join("&family=")}&display=swap`
     : "";
 
-  const getResolvedStyles = (el: CanvasElement) => {
-    const base = el.styles;
-    if (activeDevice === "mobile") {
-      return { ...base, ...base.mobile };
-    }
-    if (activeDevice === "tablet") {
-      return { ...base, ...base.tablet };
-    }
-    return base;
-  };
-
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (previewMode) return;
     e.preventDefault();
@@ -187,154 +108,6 @@ export default function WorkspaceCanvas({
     document.addEventListener("pointermove", onPointerMove);
     document.addEventListener("pointerup", onPointerUp);
   };
-
-  // Helper to translate style classes to Tailwind classes
-  const getStyleClasses = (el: CanvasElement) => {
-    const s = getResolvedStyles(el);
-    const classes: string[] = [];
-
-    // Margin mapping
-    const isLayoutComponent = ["section", "container", "grid-2"].includes(el.type);
-    const marginPrefix = isLayoutComponent ? "my-" : "m-";
-    if (s.margin === "space-none") classes.push(`${marginPrefix}none`);
-    else if (s.margin === "space-xs") classes.push(`${marginPrefix}xs`);
-    else if (s.margin === "space-sm") classes.push(`${marginPrefix}sm`);
-    else if (s.margin === "space-md") classes.push(`${marginPrefix}md`);
-    else if (s.margin === "space-lg") classes.push(`${marginPrefix}lg`);
-    else if (s.margin === "space-xl") classes.push(`${marginPrefix}xl`);
-    else if (s.margin === "space-2xl") classes.push(`${marginPrefix}2xl`);
-
-    // Padding mapping
-    if (s.padding === "space-none") classes.push("p-none");
-    else if (s.padding === "space-xs") classes.push("p-xs");
-    else if (s.padding === "space-sm") classes.push("p-sm");
-    else if (s.padding === "space-md") classes.push("p-md");
-    else if (s.padding === "space-lg") classes.push("p-lg");
-    else if (s.padding === "space-xl") classes.push("p-xl");
-    else if (s.padding === "space-2xl") classes.push("p-2xl");
-
-    // Font size mapping
-    if (s.fontSize) classes.push(s.fontSize);
-
-    // Text Alignment mapping
-    if (s.align === "left") classes.push("text-left");
-    else if (s.align === "center") classes.push("text-center");
-    else if (s.align === "right") classes.push("text-right");
-
-    // Border Radius mapping
-    if (s.borderRadius) classes.push(s.borderRadius);
-
-    // Font weight mapping
-    if (s.fontWeight) classes.push(s.fontWeight);
-
-    // Letter spacing mapping
-    if (s.letterSpacing) classes.push(s.letterSpacing);
-
-    // Flex layout container base class and mappings (for section / container)
-    if (["section", "container"].includes(el.type)) {
-      classes.push("flex");
-
-      // Flex direction mapping
-      if (s.direction === "row") {
-        classes.push("flex-row");
-      } else {
-        classes.push("flex-col"); // Default to flex-col
-      }
-
-      // Justify content mapping
-      if (s.justify === "start") classes.push("justify-start");
-      else if (s.justify === "end") classes.push("justify-end");
-      else if (s.justify === "between") classes.push("justify-between");
-      else classes.push("justify-center"); // Default to justify-center
-
-      // Align items mapping
-      if (s.alignItems === "start") classes.push("items-start");
-      else if (s.alignItems === "end") classes.push("items-end");
-      else if (s.alignItems === "stretch") classes.push("items-stretch");
-      else classes.push("items-center"); // Default to items-center
-
-      // Gap mapping
-      if (s.gap === "space-none") classes.push("gap-0");
-      else if (s.gap === "space-xs") classes.push("gap-xs");
-      else if (s.gap === "space-sm") classes.push("gap-sm");
-      else if (s.gap === "space-lg") classes.push("gap-lg");
-      else if (s.gap === "space-xl") classes.push("gap-xl");
-      else if (s.gap === "space-2xl") classes.push("gap-2xl");
-      else classes.push("gap-md"); // Default to gap-md (gap-6)
-
-      // Width containment mode mapping
-      if (s.widthMode === "boxed-sm") classes.push("max-w-[384px] mx-auto w-full");
-      else if (s.widthMode === "boxed-md") classes.push("max-w-[448px] mx-auto w-full");
-      else if (s.widthMode === "boxed-lg") classes.push("max-w-[512px] mx-auto w-full");
-      else if (s.widthMode === "boxed-xl") classes.push("max-w-[576px] mx-auto w-full");
-      else classes.push("w-full"); // Default to w-full
-
-      // Min height class mapping
-      if (s.minHeight === "screen") classes.push("min-h-screen");
-      else if (s.minHeight === "auto") classes.push("min-h-auto");
-    }
-
-    return classes.join(" ");
-  };
-
-  const mapColor = (colorVal: string) => {
-    if (!colorVal) return colorVal;
-    
-    // Normalize to lowercase for robust matching
-    const val = colorVal.toLowerCase().trim();
-
-    // Map base/original aether hexes to variables so presets and customized colors work
-    if (val === "#d4f0fc") return "var(--brand-ice-blue)";
-    if (val === "#89d6fb") return "var(--brand-sky-blue)";
-    if (val === "#02a9f7") return "var(--brand-cyan-active)";
-    if (val === "#02577a") return "var(--brand-deep-teal)";
-    if (val === "#01303f") return "var(--brand-dark-slate)";
-
-    return colorVal;
-  };
-
-  const getStyleProps = (el: CanvasElement) => {
-    const s = getResolvedStyles(el);
-    const props: React.CSSProperties = {};
-    if (s.color) {
-      const mappedColor = mapColor(s.color);
-      if (["button", "section", "container", "grid-2"].includes(el.type)) {
-        props.backgroundColor = mappedColor;
-        // Contrast calculation for text (simple rule)
-        const val = s.color.toLowerCase().trim();
-        const isLightBg = ["#d4f0fc", "#89d6fb", "var(--brand-ice-blue)", "var(--brand-sky-blue)"].includes(val);
-        props.color = isLightBg ? "var(--brand-dark-slate)" : "#ffffff";
-      } else {
-        props.color = mappedColor;
-      }
-    }
-
-    // Border style properties mapping
-    if (s.borderStyle && s.borderStyle !== "none") {
-      props.borderStyle = s.borderStyle as React.CSSProperties["borderStyle"];
-      props.borderWidth = `${s.borderWidth || 0}px`;
-      if (s.borderColor) {
-        props.borderColor = mapColor(s.borderColor);
-      } else {
-        props.borderColor = "var(--panel-border)"; // Default fallback color
-      }
-    }
-
-    // Font family mapping
-    if (s.fontFamily) {
-      props.fontFamily = s.fontFamily;
-    }
-
-    // Min height custom pixel mapping
-    if (s.minHeight) {
-      if (s.minHeight === "h-300") props.minHeight = "300px";
-      else if (s.minHeight === "h-500") props.minHeight = "500px";
-      else if (s.minHeight === "h-700") props.minHeight = "700px";
-    }
-
-    return props;
-  };
-
   // Device Frame classes calculation
   const getDeviceFrameStyles = () => {
     if (activeDevice === "mobile") {
@@ -350,8 +123,8 @@ export default function WorkspaceCanvas({
   const renderElement = (el: CanvasElement): React.ReactNode => {
     const isSelected = selectedElementId === el.id;
     const isHovered = hoveredElementId === el.id;
-    const styleClasses = getStyleClasses(el);
-    const customStyles = getStyleProps(el);
+    const styleClasses = getStyleClasses(el, activeDevice);
+    const customStyles = getStyleProps(el, activeDevice, themePalette);
     
     // Find children of this element
     const children = canvasElements.filter(child => child.parentId === el.id);

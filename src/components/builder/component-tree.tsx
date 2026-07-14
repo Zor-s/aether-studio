@@ -1,7 +1,7 @@
 "use client";
-
+ 
 import { useMemo, useState } from "react";
-import type { CanvasElement } from "./workspace-canvas";
+import { CanvasElement } from "@/types/builder";
 
 interface ComponentTreeProps {
   canvasElements: CanvasElement[];

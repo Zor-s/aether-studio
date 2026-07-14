@@ -31,9 +31,9 @@ When updating this document:
 
 ---
 
-- [ ] **Codebase Refactoring & Manageability Phase**
-  - **Status:** Planning phase; awaiting feedback and approval.
-  - [ ] **Feature: Shared Types Extraction (CanvasElement, PageSettings, Toast)**
+- [X] **Codebase Refactoring & Manageability Phase**
+  - **Status:** Completed. All components refactored, custom hooks extracted, and registry decoupled.
+  - [X] **Feature: Shared Types Extraction (CanvasElement, PageSettings, Toast)**
     - **Goal:** Unify duplicate type definitions (`CanvasElement`, `PageSettings`, `Toast`) from `workspace-canvas.tsx`, `compiler.ts`, `right-sidebar.tsx`, `toast.tsx`, and `page.tsx` into a single, clean shared file.
     - **Files Involved:**
       - `src/types/builder.ts` [NEW]
@@ -47,7 +47,7 @@ When updating this document:
       - `src/lib/compiler/compiler.ts` [MODIFY]
       - `src/app/dashboard/page.tsx` [MODIFY]
       - `src/app/api/publish/route.ts` [MODIFY]
-  - [ ] **Feature: State Management & Custom Hooks Extraction**
+  - [X] **Feature: State Management & Custom Hooks Extraction**
     - **Goal:** Extract state management, event listeners, and BroadcastChannel/KV syncing logic from `src/app/dashboard/page.tsx` into clean custom hooks (`useCanvasState`, `useSyncState`, `usePublishState`, `useToast`).
     - **Files Involved:**
       - `src/hooks/use-canvas-state.ts` [NEW]
@@ -55,14 +55,14 @@ When updating this document:
       - `src/hooks/use-publish-state.ts` [NEW]
       - `src/hooks/use-toast.ts` [NEW]
       - `src/app/dashboard/page.tsx` [MODIFY]
-  - [ ] **Feature: Component Registry & Mockup Decoupling**
+  - [X] **Feature: Component Registry & Mockup Decoupling**
     - **Goal:** Extract component schemas (`REGISTRY_ELEMENTS`), asset search datasets, graphic previews (`getElementPreviewMockup`), and popover style animations out of `left-sidebar.tsx` and place them in modular registry modules.
     - **Files Involved:**
       - `src/components/registry/registry-elements.tsx` [NEW]
       - `src/components/registry/preview-mockups.tsx` [NEW]
       - `src/components/registry/index.ts` [NEW]
       - `src/components/builder/left-sidebar.tsx` [MODIFY]
-  - [ ] **Feature: Right Sidebar Tabbed Panel Separation**
+  - [X] **Feature: Right Sidebar Tabbed Panel Separation**
     - **Goal:** Deconstruct `RightSidebar` (1178 lines) into smaller, single-purpose tab panel subcomponents (`CustomSelect`, `PageSettingsTab`, `StyleInspectorTab`, `ContentInspectorTab`).
     - **Files Involved:**
       - `src/components/builder/right-sidebar/custom-select.tsx` [NEW]
@@ -70,14 +70,14 @@ When updating this document:
       - `src/components/builder/right-sidebar/style-inspector-tab.tsx` [NEW]
       - `src/components/builder/right-sidebar/content-inspector-tab.tsx` [NEW]
       - `src/components/builder/right-sidebar.tsx` [MODIFY]
-  - [ ] **Feature: Shared Styling Utilities & DRY Enforcement**
+  - [X] **Feature: Shared Styling Utilities & DRY Enforcement**
     - **Goal:** Unify duplicated styling and class-mapping helpers (`getStyleClasses`, `getResolvedStyles`, `mapColor`, and `getStyleProps`) from `WorkspaceCanvas` and `compiler.ts` into a single, importable utility file `style-utils.ts`.
     - **Files Involved:**
       - `src/lib/compiler/style-utils.ts` [NEW]
       - `src/lib/compiler/index.ts` [MODIFY]
       - `src/components/builder/workspace-canvas.tsx` [MODIFY]
       - `src/lib/compiler/compiler.ts` [MODIFY]
-  - [ ] **Feature: Lint & Compiler Warning Cleanups**
+  - [X] **Feature: Lint & Compiler Warning Cleanups**
     - **Goal:** Clean up the pre-existing ESLint warnings and typescript compilation errors across all main files.
     - **Files Involved:**
       - `src/app/api/publish/route.ts` [MODIFY]

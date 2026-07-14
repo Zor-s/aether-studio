@@ -18,19 +18,21 @@ This document details the architecture, file structure, code conventions, and ma
 │   │   │   └── /upload-url          # Pre-signed R2 asset upload url generator
 │   │   ├── /dashboard               # Builder UI canvas & version-reconciliation workspace
 │   │   │   └── /projects            # Projects Overview Dashboard (subdomains & analytics)
-│   │   ├── favicon.ico              # Dashboard asset
 │   │   ├── globals.css              # Main tailwind and layout global styles
 │   │   ├── layout.tsx               # Root app router layout structure
 │   │   └── page.tsx                 # Landing / Landing Redirection page
 │   ├── /components                  # Reusable React components
-│   │   ├── /builder                 # Drag & drop layout tree manipulation widgets (including ProjectCard)
-│   │   └── /registry                # Token-to-inline style compilers
+│   │   ├── /builder                 # Drag & drop layout tree components
+│   │   │   └── /right-sidebar       # Decomposed style, content, and page settings tab panels
+│   │   └── /registry                # Static component registry elements and graphic mockups
+│   ├── /hooks                       # Extracted modular canvas, sync, publish, and toast state custom hooks
 │   ├── /lib                         # Shared services & utility modules
-│   │   ├── /compiler                # HTML compilation & DOMPurify sanitization (Turnstile/media elements disabled in basic-only mode)
+│   │   ├── /compiler                # HTML serialization engine and shared style utilities (style-utils.ts)
 │   │   ├── /db                      # Relational Database connection wrapper (Turso/Neon)
 │   │   ├── /kv                      # Vercel KV cache & backup client
-│   │   ├── /r2                      # AWS SDK R2 Client bucket integration (reserved for basic-only assets)
+│   │   ├── /r2                      # AWS SDK R2 Client bucket integration
 │   │   └── /telemetry               # Sentry exceptions and custom tracing helpers
+│   ├── /types                       # Unified builder typings contract definition file (builder.ts)
 │   └── proxy.ts                     # Next.js 16 pre-request interceptor boundary
 ├── /workers                         # Cloudflare Edge Worker microservices
 │   ├── /subdomain-router            # Routing engine using Cache API (caches.default)

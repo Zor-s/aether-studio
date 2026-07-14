@@ -1,1 +1,2 @@
-// Registry components entry
+export * from "./registry-elements";
+export * from "./preview-mockups";
