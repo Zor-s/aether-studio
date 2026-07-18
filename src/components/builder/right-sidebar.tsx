@@ -36,6 +36,12 @@ export default function RightSidebar({
       deepTeal: "#02577a",
       darkSlate: "#01303f",
     },
+    backgroundColor: "#01303f",
+    textColor: "#ffffff",
+    fontFamily: "Inter",
+    widthMode: "boxed-md",
+    padding: "space-lg",
+    gap: "space-lg",
   },
   onUpdatePageSettings = () => {},
   onShowToast,
@@ -63,11 +69,6 @@ export default function RightSidebar({
           onUpdatePageSettings={onUpdatePageSettings}
           onShowToast={onShowToast}
         />
-
-        {/* Footer */}
-        <div className="p-md border-t border-panel-border bg-background/30 shrink-0 text-[10px] text-text-muted font-medium leading-relaxed">
-          🌐 Click on any canvas element to switch editing fields back to block styling controls.
-        </div>
       </aside>
     );
   }
@@ -139,11 +140,6 @@ export default function RightSidebar({
             canvasElements={canvasElements}
           />
         )}
-      </div>
-
-      {/* Info Status footer */}
-      <div className="p-md border-t border-panel-border bg-background/30 shrink-0 text-[10px] text-text-muted font-medium leading-relaxed">
-        🛠️ State changes are stored in client memory. Click preview in the header to view live compiled behavior.
       </div>
     </aside>
   );

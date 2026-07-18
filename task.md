@@ -31,58 +31,15 @@ When updating this document:
 
 ---
 
-- [X] **Codebase Refactoring & Manageability Phase**
-  - **Status:** Completed. All components refactored, custom hooks extracted, and registry decoupled.
-  - [X] **Feature: Shared Types Extraction (CanvasElement, PageSettings, Toast)**
-    - **Goal:** Unify duplicate type definitions (`CanvasElement`, `PageSettings`, `Toast`) from `workspace-canvas.tsx`, `compiler.ts`, `right-sidebar.tsx`, `toast.tsx`, and `page.tsx` into a single, clean shared file.
-    - **Files Involved:**
-      - `src/types/builder.ts` [NEW]
-      - `src/components/builder/workspace-canvas.tsx` [MODIFY]
-      - `src/components/builder/right-sidebar.tsx` [MODIFY]
-      - `src/components/builder/header.tsx` [MODIFY]
-      - `src/components/builder/left-sidebar.tsx` [MODIFY]
-      - `src/components/builder/component-tree.tsx` [MODIFY]
-      - `src/components/builder/toast.tsx` [MODIFY]
-      - `src/components/builder/index.ts` [MODIFY]
-      - `src/lib/compiler/compiler.ts` [MODIFY]
-      - `src/app/dashboard/page.tsx` [MODIFY]
-      - `src/app/api/publish/route.ts` [MODIFY]
-  - [X] **Feature: State Management & Custom Hooks Extraction**
-    - **Goal:** Extract state management, event listeners, and BroadcastChannel/KV syncing logic from `src/app/dashboard/page.tsx` into clean custom hooks (`useCanvasState`, `useSyncState`, `usePublishState`, `useToast`).
-    - **Files Involved:**
-      - `src/hooks/use-canvas-state.ts` [NEW]
-      - `src/hooks/use-sync-state.ts` [NEW]
-      - `src/hooks/use-publish-state.ts` [NEW]
-      - `src/hooks/use-toast.ts` [NEW]
-      - `src/app/dashboard/page.tsx` [MODIFY]
-  - [X] **Feature: Component Registry & Mockup Decoupling**
-    - **Goal:** Extract component schemas (`REGISTRY_ELEMENTS`), asset search datasets, graphic previews (`getElementPreviewMockup`), and popover style animations out of `left-sidebar.tsx` and place them in modular registry modules.
-    - **Files Involved:**
-      - `src/components/registry/registry-elements.tsx` [NEW]
-      - `src/components/registry/preview-mockups.tsx` [NEW]
-      - `src/components/registry/index.ts` [NEW]
-      - `src/components/builder/left-sidebar.tsx` [MODIFY]
-  - [X] **Feature: Right Sidebar Tabbed Panel Separation**
-    - **Goal:** Deconstruct `RightSidebar` (1178 lines) into smaller, single-purpose tab panel subcomponents (`CustomSelect`, `PageSettingsTab`, `StyleInspectorTab`, `ContentInspectorTab`).
-    - **Files Involved:**
-      - `src/components/builder/right-sidebar/custom-select.tsx` [NEW]
-      - `src/components/builder/right-sidebar/page-settings-tab.tsx` [NEW]
-      - `src/components/builder/right-sidebar/style-inspector-tab.tsx` [NEW]
-      - `src/components/builder/right-sidebar/content-inspector-tab.tsx` [NEW]
-      - `src/components/builder/right-sidebar.tsx` [MODIFY]
-  - [X] **Feature: Shared Styling Utilities & DRY Enforcement**
-    - **Goal:** Unify duplicated styling and class-mapping helpers (`getStyleClasses`, `getResolvedStyles`, `mapColor`, and `getStyleProps`) from `WorkspaceCanvas` and `compiler.ts` into a single, importable utility file `style-utils.ts`.
-    - **Files Involved:**
-      - `src/lib/compiler/style-utils.ts` [NEW]
-      - `src/lib/compiler/index.ts` [MODIFY]
-      - `src/components/builder/workspace-canvas.tsx` [MODIFY]
-      - `src/lib/compiler/compiler.ts` [MODIFY]
-  - [X] **Feature: Lint & Compiler Warning Cleanups**
-    - **Goal:** Clean up the pre-existing ESLint warnings and typescript compilation errors across all main files.
-    - **Files Involved:**
-      - `src/app/api/publish/route.ts` [MODIFY]
-      - `src/app/dashboard/page.tsx` [MODIFY]
-      - `src/components/builder/header.tsx` [MODIFY]
-      - `src/components/builder/left-sidebar.tsx` [MODIFY]
-      - `src/components/builder/right-sidebar.tsx` [MODIFY]
-      - `src/lib/compiler/compiler.ts` [MODIFY]
+## Page Settings Sidebar Re-engineering
+
+- [x] Re-engineer Page Settings Sidebar & Synchronization
+    - [x] Update type contracts (`src/types/builder.ts`) with new PageSettings fields and shared font list.
+    - [x] Update dashboard state (`src/app/dashboard/page.tsx`) with default values.
+    - [x] Implement robust loading/merging logic in synchronization hook (`src/hooks/use-sync-state.ts`).
+    - [x] Update compilation logic (`src/lib/compiler/compiler.ts`) to use dynamic page settings.
+    - [x] Update canvas layout (`src/components/builder/workspace-canvas.tsx`) to match page settings in edit mode.
+    - [x] Re-design right sidebar Page Settings tab (`src/components/builder/right-sidebar/page-settings-tab.tsx`) with premium UI sections.
+    - [x] Update style inspector tab (`src/components/builder/right-sidebar/style-inspector-tab.tsx`) to use shared font list.
+    - [x] Verify functionality, check builds, and test page compilation output.
+

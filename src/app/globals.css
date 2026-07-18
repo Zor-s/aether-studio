@@ -64,8 +64,8 @@
   --spacing-2xl: 3rem;   /* 48px */
 
   /* Exact Font Size Scale Classes (e.g. text-xs, text-md, text-3xl) */
-  --font-size-xs: 0.75rem;   /* 12px */
-  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-xs: 0.78125rem;   /* 12.5px */
+  --font-size-sm: 0.90625rem;  /* 14.5px */
   --font-size-md: 1rem;      /* 16px */
   --font-size-lg: 1.125rem;  /* 18px */
   --font-size-xl: 1.25rem;   /* 20px */
@@ -148,3 +148,18 @@ body {
     linear-gradient(to right, rgba(137, 214, 251, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(137, 214, 251, 0.03) 1px, transparent 1px);
 }
+
+/* Override extremely small hardcoded font sizes to be more readable */
+.text-\[8px\] {
+  font-size: 0.625rem !important; /* 10px */
+}
+.text-\[9px\] {
+  font-size: 0.6875rem !important; /* 11px */
+}
+.text-\[10px\] {
+  font-size: 0.75rem !important; /* 12px */
+}
+.text-\[11px\] {
+  font-size: 0.78125rem !important; /* 12.5px */
+}
+

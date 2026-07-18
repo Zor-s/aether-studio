@@ -21,6 +21,24 @@ export default function ContentInspectorTab({
     });
   };
 
+  // Helper to find all descendant IDs of a given element to prevent parenting cycles
+  const getDescendantIds = (elementId: string): Set<string> => {
+    const ids = new Set<string>();
+    let addedNew = true;
+    while (addedNew) {
+      addedNew = false;
+      canvasElements.forEach((el) => {
+        if (el.parentId && (el.parentId === elementId || ids.has(el.parentId)) && !ids.has(el.id)) {
+          ids.add(el.id);
+          addedNew = true;
+        }
+      });
+    }
+    return ids;
+  };
+
+  const descendantIds = getDescendantIds(selectedElement.id);
+
   return (
     <div className="flex flex-col gap-md">
       {/* Parent Container Selector */}
@@ -33,7 +51,12 @@ export default function ContentInspectorTab({
             options={[
               { value: "", label: "None (Root Page)" },
               ...canvasElements
-                .filter((el) => ["section", "container"].includes(el.type) && el.id !== selectedElement.id)
+                .filter(
+                  (el) =>
+                    ["section", "container"].includes(el.type) &&
+                    el.id !== selectedElement.id &&
+                    !descendantIds.has(el.id)
+                )
                 .map((el) => ({
                   value: el.id,
                   label: el.name || `${el.type.charAt(0).toUpperCase() + el.type.slice(1)} (${el.id.slice(0, 6)})`,

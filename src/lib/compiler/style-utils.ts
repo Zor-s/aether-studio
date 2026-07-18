@@ -23,11 +23,11 @@ export const mapColor = (
   const val = colorVal.toLowerCase().trim();
 
   if (palette) {
-    if (val === palette.iceBlue.toLowerCase().trim()) return "var(--brand-ice-blue)";
-    if (val === palette.skyBlue.toLowerCase().trim()) return "var(--brand-sky-blue)";
-    if (val === palette.cyanActive.toLowerCase().trim()) return "var(--brand-cyan-active)";
-    if (val === palette.deepTeal.toLowerCase().trim()) return "var(--brand-deep-teal)";
-    if (val === palette.darkSlate.toLowerCase().trim()) return "var(--brand-dark-slate)";
+    if (palette.iceBlue && val === palette.iceBlue.toLowerCase().trim()) return "var(--brand-ice-blue)";
+    if (palette.skyBlue && val === palette.skyBlue.toLowerCase().trim()) return "var(--brand-sky-blue)";
+    if (palette.cyanActive && val === palette.cyanActive.toLowerCase().trim()) return "var(--brand-cyan-active)";
+    if (palette.deepTeal && val === palette.deepTeal.toLowerCase().trim()) return "var(--brand-deep-teal)";
+    if (palette.darkSlate && val === palette.darkSlate.toLowerCase().trim()) return "var(--brand-dark-slate)";
   }
 
   // Fallback defaults

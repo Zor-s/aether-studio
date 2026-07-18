@@ -14,6 +14,8 @@ import { useCanvasState } from "@/hooks/use-canvas-state";
 import { usePublishState } from "@/hooks/use-publish-state";
 import { useSyncState } from "@/hooks/use-sync-state";
 
+import { PageSettings } from "@/types/builder";
+
 export default function DashboardPage() {
   const { toasts, showToast, removeToast } = useToast();
 
@@ -46,7 +48,7 @@ export default function DashboardPage() {
   } = useCanvasState(showToast);
 
   // Global Page Settings State
-  const [pageSettings, setPageSettings] = useState({
+  const [pageSettings, setPageSettings] = useState<PageSettings>({
     seoTitle: "Alex Mercer Portfolio",
     seoDescription: "Lead Software Architect and Developer based in San Francisco.",
     customJs: "",
@@ -58,9 +60,15 @@ export default function DashboardPage() {
       deepTeal: "#02577a",
       darkSlate: "#01303f",
     },
+    backgroundColor: "#01303f",
+    textColor: "#ffffff",
+    fontFamily: "Inter",
+    widthMode: "boxed-md",
+    padding: "space-lg",
+    gap: "space-lg",
   });
 
-  const handleUpdatePageSettings = (updates: Partial<typeof pageSettings>) => {
+  const handleUpdatePageSettings = (updates: Partial<PageSettings>) => {
     setPageSettings((prev) => ({ ...prev, ...updates }));
   };
 
@@ -141,7 +149,7 @@ export default function DashboardPage() {
           onDuplicateElement={handleDuplicateElement}
           onMoveElement={handleMoveElement}
           onReorderElements={handleReorderElements}
-          themePalette={pageSettings.themePalette}
+          pageSettings={pageSettings}
         />
 
         {/* Right Style Inspector Sidebar (Hidden on small viewports) */}

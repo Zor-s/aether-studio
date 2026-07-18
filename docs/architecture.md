@@ -23,7 +23,7 @@ This document details the architecture, file structure, code conventions, and ma
 │   │   └── page.tsx                 # Landing / Landing Redirection page
 │   ├── /components                  # Reusable React components
 │   │   ├── /builder                 # Drag & drop layout tree components
-│   │   │   └── /right-sidebar       # Decomposed style, content, and page settings tab panels
+│   │   │   └── /right-sidebar       # Decomposed style, content, page settings, and color-picker panels
 │   │   └── /registry                # Static component registry elements and graphic mockups
 │   ├── /hooks                       # Extracted modular canvas, sync, publish, and toast state custom hooks
 │   ├── /lib                         # Shared services & utility modules

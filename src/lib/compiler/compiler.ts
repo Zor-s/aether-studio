@@ -1,6 +1,21 @@
 import { CanvasElement, PageSettings } from "@/types/builder";
 import { mapColor, getStyleClasses } from "./style-utils";
 
+function escapeHtmlAttr(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function escapeScriptTag(jsCode: string): string {
+  if (!jsCode) return '';
+  return jsCode.replace(/<\/script>/gi, '<\\/script>');
+}
+
 function getElementInlineStyles(el: CanvasElement, palette: PageSettings['themePalette']): string {
   const styles: string[] = [];
   
@@ -107,13 +122,14 @@ function compileElement(el: CanvasElement, allElements: CanvasElement[], palette
 export function compileLayout(elements: CanvasElement[], settings: PageSettings): string {
   const uniqueFonts = Array.from(
     new Set(
-      elements
-        .flatMap((el) => [
+      [
+        settings.fontFamily,
+        ...elements.flatMap((el) => [
           el.styles.fontFamily,
           el.styles.mobile?.fontFamily,
           el.styles.tablet?.fontFamily,
         ])
-        .filter((font): font is string => !!font)
+      ].filter((font): font is string => !!font)
     )
   );
 
@@ -198,9 +214,9 @@ export function compileLayout(elements: CanvasElement[], settings: PageSettings)
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${settings.seoTitle || 'Portfolio'}</title>
-  <meta name="description" content="${settings.seoDescription || ''}">
-  ${settings.faviconUrl ? `<link rel="icon" href="${settings.faviconUrl}" type="image/x-icon">` : ''}
+  <title>${escapeHtmlAttr(settings.seoTitle || 'Portfolio')}</title>
+  <meta name="description" content="${escapeHtmlAttr(settings.seoDescription || '')}">
+  ${settings.faviconUrl ? `<link rel="icon" href="${escapeHtmlAttr(settings.faviconUrl)}" type="image/x-icon">` : ''}
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -259,12 +275,20 @@ export function compileLayout(elements: CanvasElement[], settings: PageSettings)
 
     /* Custom Base settings */
     body {
-      background-color: var(--brand-dark-slate);
-      color: #ffffff;
-      font-family: 'Inter', sans-serif;
+      background-color: ${mapColor(settings.backgroundColor || '#01303f', settings.themePalette)};
+      color: ${mapColor(settings.textColor || '#ffffff', settings.themePalette)};
+      font-family: '${settings.fontFamily || 'Inter'}', sans-serif;
       min-height: 100vh;
       margin: 0;
-      padding: 2rem 1.5rem;
+      padding: ${
+        settings.padding === "space-none" ? "0" :
+        settings.padding === "space-xs" ? "0.25rem" :
+        settings.padding === "space-sm" ? "0.5rem" :
+        settings.padding === "space-md" ? "1rem" :
+        settings.padding === "space-lg" ? "2rem 1.5rem" :
+        settings.padding === "space-xl" ? "3rem 2rem" :
+        settings.padding === "space-2xl" ? "4rem 3rem" : "2rem 1.5rem"
+      };
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -272,15 +296,28 @@ export function compileLayout(elements: CanvasElement[], settings: PageSettings)
     
     .portfolio-wrapper {
       width: 100%;
-      max-width: 768px;
+      max-width: ${
+        settings.widthMode === "boxed-md" ? "768px" :
+        settings.widthMode === "boxed-lg" ? "1024px" :
+        settings.widthMode === "boxed-xl" ? "1280px" :
+        settings.widthMode === "full" ? "100%" : "768px"
+      };
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: ${
+        settings.gap === "space-none" ? "0" :
+        settings.gap === "space-xs" ? "0.25rem" :
+        settings.gap === "space-sm" ? "0.5rem" :
+        settings.gap === "space-md" ? "1rem" :
+        settings.gap === "space-lg" ? "1.5rem" :
+        settings.gap === "space-xl" ? "2rem" :
+        settings.gap === "space-2xl" ? "3rem" : "1.5rem"
+      };
     }
     ${responsiveCSS}
   </style>
 
-  ${settings.customJs ? `<script>${settings.customJs}</script>` : ''}
+  ${settings.customJs ? `<script>${escapeScriptTag(settings.customJs)}</script>` : ''}
 </head>
 <body>
   <div class="portfolio-wrapper">
@@ -330,8 +367,8 @@ function getCSSDeclaration(key: string, value: string, elType: string, palette: 
   // 3. Font Size Scale
   if (key === 'fontSize') {
     const sizeMap: Record<string, string> = {
-      'text-xs': '0.75rem',
-      'text-sm': '0.875rem',
+      'text-xs': '0.78125rem',
+      'text-sm': '0.90625rem',
       'text-md': '1rem',
       'text-lg': '1.125rem',
       'text-xl': '1.25rem',

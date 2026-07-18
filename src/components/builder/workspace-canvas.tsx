@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { CanvasElement } from "@/types/builder";
-import { getStyleClasses, getStyleProps } from "@/lib/compiler/style-utils";
+import { CanvasElement, PageSettings } from "@/types/builder";
+import { getStyleClasses, getStyleProps, getResolvedStyles, mapColor } from "@/lib/compiler/style-utils";
+import { compileLayout } from "@/lib/compiler";
 
 interface WorkspaceCanvasProps {
   activeDevice: "desktop" | "tablet" | "mobile";
@@ -15,13 +16,7 @@ interface WorkspaceCanvasProps {
   onDuplicateElement?: (id: string) => void;
   onMoveElement?: (id: string, direction: "up" | "down") => void;
   onReorderElements?: (sourceId: string, targetId: string) => void;
-  themePalette?: {
-    iceBlue: string;
-    skyBlue: string;
-    cyanActive: string;
-    deepTeal: string;
-    darkSlate: string;
-  };
+  pageSettings: PageSettings;
 }
 
 export default function WorkspaceCanvas({
@@ -35,17 +30,13 @@ export default function WorkspaceCanvas({
   onDuplicateElement = () => {},
   onMoveElement = () => {},
   onReorderElements = () => {},
-  themePalette = {
-    iceBlue: "#d4f0fc",
-    skyBlue: "#89d6fb",
-    cyanActive: "#02a9f7",
-    deepTeal: "#02577a",
-    darkSlate: "#01303f",
-  },
+  pageSettings,
 }: WorkspaceCanvasProps) {
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
   const [customWidth, setCustomWidth] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  const themePalette = pageSettings.themePalette;
 
   // Reset custom width when changing active device during render
   const [prevActiveDevice, setPrevActiveDevice] = useState(activeDevice);
@@ -57,19 +48,22 @@ export default function WorkspaceCanvas({
   // Get unique Google Fonts used in the canvas elements (including overrides)
   const uniqueFonts = Array.from(
     new Set(
-      canvasElements
-        .flatMap((el) => [
+      [
+        pageSettings.fontFamily,
+        ...canvasElements.flatMap((el) => [
           el.styles.fontFamily,
           el.styles.mobile?.fontFamily,
           el.styles.tablet?.fontFamily,
         ])
-        .filter((font): font is string => !!font)
+      ].filter((font): font is string => !!font)
     )
   );
 
   const googleFontsUrl = uniqueFonts.length > 0
     ? `https://fonts.googleapis.com/css2?family=${uniqueFonts.map(f => `${encodeURIComponent(f)}:wght@300;400;500;600;700;800`).join("&family=")}&display=swap`
     : "";
+
+  const compiledHtml = previewMode ? compileLayout(canvasElements, pageSettings) : "";
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (previewMode) return;
@@ -108,13 +102,14 @@ export default function WorkspaceCanvas({
     document.addEventListener("pointermove", onPointerMove);
     document.addEventListener("pointerup", onPointerUp);
   };
+
   // Device Frame classes calculation
   const getDeviceFrameStyles = () => {
     if (activeDevice === "mobile") {
-      return "w-[375px] min-h-[640px] rounded-[40px] border-[12px] border-dark-slate shadow-2xl relative bg-panel";
+      return "w-[375px] h-[640px] rounded-[40px] border-[12px] border-dark-slate shadow-2xl relative bg-panel overflow-hidden";
     }
     if (activeDevice === "tablet") {
-      return "w-[768px] min-h-[900px] rounded-[24px] border-[10px] border-dark-slate shadow-xl relative bg-panel";
+      return "w-[768px] h-[900px] rounded-[24px] border-[10px] border-dark-slate shadow-xl relative bg-panel overflow-hidden";
     }
     return "w-full min-h-full bg-panel shadow-sm";
   };
@@ -125,6 +120,7 @@ export default function WorkspaceCanvas({
     const isHovered = hoveredElementId === el.id;
     const styleClasses = getStyleClasses(el, activeDevice);
     const customStyles = getStyleProps(el, activeDevice, themePalette);
+    const resolvedStyles = getResolvedStyles(el, activeDevice);
     
     // Find children of this element
     const children = canvasElements.filter(child => child.parentId === el.id);
@@ -306,7 +302,7 @@ export default function WorkspaceCanvas({
         )}
 
         {el.type === "headline" && (
-          <h2 className="font-extrabold tracking-tight leading-tight leading-none text-foreground select-none">
+          <h2 className="font-extrabold tracking-tight leading-tight text-foreground select-none">
             {el.content}
           </h2>
         )}
@@ -318,10 +314,10 @@ export default function WorkspaceCanvas({
         )}
 
         {el.type === "button" && (
-          <div className={`${el.styles.align === "center" ? "flex justify-center" : el.styles.align === "right" ? "flex justify-end" : "flex justify-start"}`}>
+          <div className={`${resolvedStyles.align === "center" ? "flex justify-center" : resolvedStyles.align === "right" ? "flex justify-end" : "flex justify-start"}`}>
             <button
               style={customStyles}
-              className="px-lg h-10 select-none font-bold text-xs shadow-md transition-all duration-200 cursor-pointer"
+              className={`px-lg h-10 select-none font-bold text-xs shadow-md transition-all duration-200 cursor-pointer ${resolvedStyles.borderRadius || "rounded-none"}`}
             >
               {el.content}
             </button>
@@ -377,13 +373,16 @@ export default function WorkspaceCanvas({
           "--brand-cyan-active": themePalette.cyanActive,
           "--brand-deep-teal": themePalette.deepTeal,
           "--brand-dark-slate": themePalette.darkSlate,
+          backgroundColor: mapColor(pageSettings.backgroundColor || "#01303f", themePalette),
+          color: mapColor(pageSettings.textColor || "#ffffff", themePalette),
+          fontFamily: pageSettings.fontFamily ? `'${pageSettings.fontFamily}', sans-serif` : undefined,
         } as React.CSSProperties}
       >
         {/* Mobile Camera notch and status indicators for simulated device borders */}
         {activeDevice === "mobile" && (
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-5 bg-dark-slate rounded-b-xl z-30 flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-slate-900 mr-2" />
-            <div className="w-12 h-1 bg-slate-800 rounded-full" />
+            <div className="w-3.5 h-3.5 rounded-full bg-slate-900 mr-2" />
+            <div className="w-12 h-1.5 bg-slate-800 rounded-full" />
           </div>
         )}
 
@@ -421,11 +420,57 @@ export default function WorkspaceCanvas({
         )}
 
         {/* Scrollable Inside Viewport */}
-        <div className={`w-full h-full ${activeDevice !== "desktop" ? "py-md px-sm overflow-hidden" : ""}`}>
+        <div
+          className="w-full h-full overflow-y-auto"
+          style={{
+            padding: (() => {
+              switch (pageSettings.padding) {
+                case "space-none": return "0px";
+                case "space-xs": return "0.25rem";
+                case "space-sm": return "0.5rem";
+                case "space-md": return "1rem";
+                case "space-lg": return "2rem 1.5rem";
+                case "space-xl": return "3rem 2rem";
+                case "space-2xl": return "4rem 3rem";
+                default: return "2rem 1.5rem";
+              }
+            })(),
+            minHeight: activeDevice === "desktop" ? "100%" : undefined
+          }}
+        >
           <div className="flex flex-col w-full h-full">
-            {canvasElements
-              .filter((el) => !el.parentId || !canvasElements.some(p => p.id === el.parentId))
-              .map((el) => renderElement(el))}
+            {previewMode ? (
+              <iframe
+                srcDoc={compiledHtml}
+                className="w-full h-full border-none bg-transparent"
+                title="Portfolio Preview"
+              />
+            ) : (
+              <div
+                className="portfolio-wrapper w-full"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  maxWidth: pageSettings.widthMode === "boxed-md" ? "768px" :
+                            pageSettings.widthMode === "boxed-lg" ? "1024px" :
+                            pageSettings.widthMode === "boxed-xl" ? "1280px" :
+                            pageSettings.widthMode === "full" ? "100%" : "768px",
+                  gap: pageSettings.gap === "space-none" ? "0" :
+                       pageSettings.gap === "space-xs" ? "0.25rem" :
+                       pageSettings.gap === "space-sm" ? "0.5rem" :
+                       pageSettings.gap === "space-md" ? "1rem" :
+                       pageSettings.gap === "space-lg" ? "1.5rem" :
+                       pageSettings.gap === "space-xl" ? "2rem" :
+                       pageSettings.gap === "space-2xl" ? "3rem" : "1.5rem",
+                }}
+              >
+                {canvasElements
+                  .filter((el) => !el.parentId || !canvasElements.some(p => p.id === el.parentId))
+                  .map((el) => renderElement(el))}
+              </div>
+            )}
           </div>
         </div>
       </div>

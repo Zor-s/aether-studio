@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { CanvasElement, PageSettings } from "@/types/builder";
+import React, { useState, useRef, useEffect } from "react";
+import { CanvasElement, PageSettings, GOOGLE_FONTS_LIST } from "@/types/builder";
 import CustomSelect from "./custom-select";
+import ColorPicker from "./color-picker";
 
 interface StyleInspectorTabProps {
   activeDevice: "desktop" | "tablet" | "mobile";
@@ -11,34 +12,6 @@ interface StyleInspectorTabProps {
   pageSettings: PageSettings;
   onShowToast?: (message: string, type: "success" | "warning" | "info") => void;
 }
-
-const GOOGLE_FONTS_LIST = [
-  "Inter",
-  "Roboto",
-  "Open Sans",
-  "Montserrat",
-  "Lato",
-  "Poppins",
-  "Oswald",
-  "Raleway",
-  "Nunito",
-  "Georgia",
-  "Playfair Display",
-  "Lora",
-  "Merriweather",
-  "PT Sans",
-  "Rubik",
-  "Ubuntu",
-  "Outfit",
-  "Syne",
-  "Cormorant Garamond",
-  "Cabin",
-  "Archivo",
-  "Roboto Mono",
-  "Source Code Pro",
-  "Courier Prime",
-  "Space Grotesk",
-];
 
 export default function StyleInspectorTab({
   activeDevice,
@@ -49,6 +22,24 @@ export default function StyleInspectorTab({
 }: StyleInspectorTabProps) {
   const [fontSearch, setFontSearch] = useState("");
   const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
+  const [fontOpenUpward, setFontOpenUpward] = useState(false);
+  const fontContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (fontDropdownOpen && fontContainerRef.current) {
+      const rect = fontContainerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Font dropdown max height is max-h-56 (224px), let's threshold at 240px
+      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+        setFontOpenUpward(true);
+      } else {
+        setFontOpenUpward(false);
+      }
+    }
+  }, [fontDropdownOpen]);
 
   const themePalette = pageSettings.themePalette || {
     iceBlue: "#d4f0fc",
@@ -61,7 +52,7 @@ export default function StyleInspectorTab({
   const getStyleValue = (
     key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
   ) => {
-    const s = selectedElement.styles;
+    const s = selectedElement.styles || {};
     if (activeDevice === "mobile") {
       return s.mobile?.[key] !== undefined ? s.mobile[key] : (s[key] || "");
     }
@@ -74,11 +65,12 @@ export default function StyleInspectorTab({
   const isOverridden = (
     key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
   ) => {
+    const s = selectedElement.styles || {};
     if (activeDevice === "mobile") {
-      return selectedElement.styles.mobile?.[key] !== undefined;
+      return s.mobile?.[key] !== undefined;
     }
     if (activeDevice === "tablet") {
-      return selectedElement.styles.tablet?.[key] !== undefined;
+      return s.tablet?.[key] !== undefined;
     }
     return false;
   };
@@ -86,7 +78,7 @@ export default function StyleInspectorTab({
   const handleClearOverride = (
     key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
   ) => {
-    const updatedStyles = { ...selectedElement.styles };
+    const updatedStyles = { ...(selectedElement.styles || {}) };
 
     if (activeDevice === "mobile" && updatedStyles.mobile) {
       const newMobile = { ...updatedStyles.mobile };
@@ -120,7 +112,7 @@ export default function StyleInspectorTab({
     key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">,
     value: string
   ) => {
-    let updatedStyles = { ...selectedElement.styles };
+    let updatedStyles = { ...(selectedElement.styles || {}) };
 
     if (activeDevice === "mobile") {
       updatedStyles.mobile = {
@@ -372,7 +364,7 @@ export default function StyleInspectorTab({
 
           <div className="grid grid-cols-2 gap-sm">
             {/* Font Family Picker */}
-            <div className="col-span-2 flex flex-col gap-xs relative">
+            <div ref={fontContainerRef} className="col-span-2 flex flex-col gap-xs relative">
               {renderLabel("fontFamily", "Font Family")}
 
               {/* Trigger Button */}
@@ -412,7 +404,7 @@ export default function StyleInspectorTab({
 
               {/* Dropdown Panel */}
               {fontDropdownOpen && (
-                <div className="absolute top-[64px] left-0 right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden animate-fadeIn max-h-56">
+                <div className={`absolute ${fontOpenUpward ? "bottom-[38px]" : "top-[64px]"} left-0 right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden animate-fadeIn max-h-56`}>
                   {/* Search box inside panel */}
                   <div className="p-xs bg-background/30 border-b border-panel-border shrink-0">
                     <input
@@ -571,29 +563,11 @@ export default function StyleInspectorTab({
                 placeholder="e.g. #02a9f7"
                 className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
               />
-              {/* Color swatch picker */}
-              <div className="relative w-5 h-5 rounded-md overflow-hidden border border-panel-border/80 cursor-pointer shadow-inner shrink-0">
-                <input
-                  type="color"
-                  value={
-                    getStyleValue("color").startsWith("#")
-                      ? getStyleValue("color")
-                      : themePalette[getStyleValue("color") as keyof typeof themePalette] || "#ffffff"
-                  }
-                  onChange={(e) => handleStyleChange("color", e.target.value)}
-                  className="absolute -inset-1 w-[200%] h-[200%] opacity-0 cursor-pointer"
-                />
-                <div
-                  className="w-full h-full"
-                  style={{
-                    backgroundColor: getStyleValue("color").startsWith("#")
-                      ? getStyleValue("color")
-                      : themePalette[getStyleValue("color") as keyof typeof themePalette] ||
-                        getStyleValue("color") ||
-                        "#ffffff",
-                  }}
-                />
-              </div>
+              <ColorPicker
+                value={getStyleValue("color")}
+                onChange={(val) => handleStyleChange("color", val)}
+                themePalette={themePalette}
+              />
             </div>
           </div>
 
@@ -687,29 +661,11 @@ export default function StyleInspectorTab({
                     placeholder="e.g. #02a9f7"
                     className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
                   />
-                  <div className="relative w-5 h-5 rounded-md overflow-hidden border border-panel-border/80 cursor-pointer shadow-inner shrink-0">
-                    <input
-                      type="color"
-                      value={
-                        getStyleValue("borderColor").startsWith("#")
-                          ? getStyleValue("borderColor")
-                          : themePalette[getStyleValue("borderColor") as keyof typeof themePalette] ||
-                            "#ffffff"
-                      }
-                      onChange={(e) => handleStyleChange("borderColor", e.target.value)}
-                      className="absolute -inset-1 w-[200%] h-[200%] opacity-0 cursor-pointer"
-                    />
-                    <div
-                      className="w-full h-full"
-                      style={{
-                        backgroundColor: getStyleValue("borderColor").startsWith("#")
-                          ? getStyleValue("borderColor")
-                          : themePalette[getStyleValue("borderColor") as keyof typeof themePalette] ||
-                            getStyleValue("borderColor") ||
-                            "#ffffff",
-                      }}
-                    />
-                  </div>
+                  <ColorPicker
+                    value={getStyleValue("borderColor")}
+                    onChange={(val) => handleStyleChange("borderColor", val)}
+                    themePalette={themePalette}
+                  />
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 export interface Option {
   value: string;
@@ -23,10 +23,29 @@ export default function CustomSelect({
   className = "",
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const selectedOption = options.find((opt) => opt.value === value);
 
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Dropdown max height is max-h-48 (192px), let's threshold at 200px
+      if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+  }, [isOpen]);
+
   return (
-    <div className="relative w-full">
+    <div ref={containerRef} className="relative w-full">
       {/* Trigger Button */}
       <button
         type="button"
@@ -61,7 +80,7 @@ export default function CustomSelect({
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute top-[38px] left-0 right-0 bg-panel border border-panel-border rounded-lg shadow-xl z-50 flex flex-col overflow-hidden animate-fadeIn max-h-48">
+        <div className={`absolute ${openUpward ? "bottom-[38px]" : "top-[38px]"} left-0 right-0 bg-panel border border-panel-border rounded-lg shadow-xl z-50 flex flex-col overflow-hidden animate-fadeIn max-h-48`}>
           <div className="overflow-y-auto custom-scrollbar py-xs flex flex-col bg-panel">
             {options.map((opt) => {
               const isActive = opt.value === value;

@@ -80,7 +80,42 @@ export interface PageSettings {
     deepTeal: string;
     darkSlate: string;
   };
+  backgroundColor: string;
+  textColor: string;
+  fontFamily: string;
+  widthMode: "boxed-md" | "boxed-lg" | "boxed-xl" | "full";
+  padding: string;
+  gap: string;
 }
+
+export const GOOGLE_FONTS_LIST = [
+  "Inter",
+  "Roboto",
+  "Open Sans",
+  "Montserrat",
+  "Lato",
+  "Poppins",
+  "Oswald",
+  "Raleway",
+  "Nunito",
+  "Georgia",
+  "Playfair Display",
+  "Lora",
+  "Merriweather",
+  "PT Sans",
+  "Rubik",
+  "Ubuntu",
+  "Outfit",
+  "Syne",
+  "Cormorant Garamond",
+  "Cabin",
+  "Archivo",
+  "Roboto Mono",
+  "Source Code Pro",
+  "Courier Prime",
+  "Space Grotesk",
+];
+
 
 export interface Toast {
   id: string;

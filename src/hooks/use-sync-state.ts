@@ -23,6 +23,26 @@ export function useSyncState({
 
   // 1. Initialize from localStorage and set up BroadcastChannel on mount
   useEffect(() => {
+    const defaultPageSettings: PageSettings = {
+      seoTitle: "Alex Mercer Portfolio",
+      seoDescription: "Lead Software Architect and Developer based in San Francisco.",
+      customJs: "",
+      faviconUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=80&auto=format&fit=crop",
+      themePalette: {
+        iceBlue: "#d4f0fc",
+        skyBlue: "#89d6fb",
+        cyanActive: "#02a9f7",
+        deepTeal: "#02577a",
+        darkSlate: "#01303f",
+      },
+      backgroundColor: "#01303f",
+      textColor: "#ffffff",
+      fontFamily: "Inter",
+      widthMode: "boxed-md",
+      padding: "space-lg",
+      gap: "space-lg",
+    };
+
     // Load from localStorage
     const savedElements = localStorage.getItem("aether_canvas_elements");
     const savedSettings = localStorage.getItem("aether_page_settings");
@@ -30,7 +50,12 @@ export function useSyncState({
 
     if (savedElements) {
       try {
-        setCanvasElements(JSON.parse(savedElements));
+        const parsed = JSON.parse(savedElements);
+        if (Array.isArray(parsed)) {
+          setCanvasElements(parsed);
+        } else {
+          console.error("Canvas elements in localStorage is not an array");
+        }
       } catch (e) {
         console.error("Failed to parse canvas elements from localStorage", e);
       }
@@ -38,7 +63,15 @@ export function useSyncState({
 
     if (savedSettings) {
       try {
-        setPageSettings(JSON.parse(savedSettings));
+        const parsed = JSON.parse(savedSettings);
+        setPageSettings({
+          ...defaultPageSettings,
+          ...parsed,
+          themePalette: {
+            ...defaultPageSettings.themePalette,
+            ...(parsed.themePalette || {}),
+          },
+        });
       } catch (e) {
         console.error("Failed to parse page settings from localStorage", e);
       }
@@ -56,8 +89,17 @@ export function useSyncState({
       const { type, elements, settings, timestamp } = event.data;
       if (type === "STATE_MUTATED" && timestamp > localTimestampRef.current) {
         localTimestampRef.current = timestamp;
-        if (elements) setCanvasElements(elements);
-        if (settings) setPageSettings(settings);
+        if (elements && Array.isArray(elements)) setCanvasElements(elements);
+        if (settings) {
+          setPageSettings({
+            ...defaultPageSettings,
+            ...settings,
+            themePalette: {
+              ...defaultPageSettings.themePalette,
+              ...(settings.themePalette || {}),
+            },
+          });
+        }
         showToast("Synchronized workspace with another active tab", "info");
       }
     };

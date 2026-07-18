@@ -78,7 +78,26 @@ Aether Studio supports real-time customization of the design color palette. Thro
    ```
 3. **Contrast Calculation**: Button components calculate contrast foreground colors dynamically. If the button background matches a light accent color (like `iceBlue` or `skyBlue`), it defaults its text color to `var(--brand-dark-slate)`; otherwise, it renders white (`#ffffff`).
 
+### D. Global Page Styles & Layout Customization
+
+Aether Studio supports page-level style overrides and layout alignment configurations that apply globally to the compiled document and align edit-mode workspace visual frames in a true WYSIWYG experience:
+
+1. **Global Canvas Styles**:
+   - **`fontFamily`**: Sets the global font for the body element (searchable from the Google Fonts API registry).
+   - **`backgroundColor`**: Configures the overall page backdrop fill (HEX or theme swatch color variable).
+   - **`textColor`**: Overrides the base typography text color.
+
+2. **Container Sizing & Spacing**:
+   - **`widthMode`**: Defines the maximum width of the root visual block layout stack:
+     - `boxed-md`: Limits layout container to standard `768px` (default).
+     - `boxed-lg`: Limits layout container to showcase `1024px`.
+     - `boxed-xl`: Limits layout container to wide desktop `1280px`.
+     - `full`: Sets layout container to span `100%` width.
+   - **`padding`**: Sets the outer body spacing margins surrounding the main layout container (options map to spacing tokens: `space-none` to `space-2xl`).
+   - **`gap`**: Defines the sibling vertical margins between root elements (options map to spacing tokens: `space-none` to `space-2xl`).
+
 ---
+
 
 ## 2. Strict Measurements & Sizing Scale
 
@@ -101,8 +120,8 @@ Fonts will utilize the project's standard Geist Sans and Geist Mono families, as
 
 | Token | CSS Font Size | Line Height | Purpose |
 | :--- | :--- | :--- | :--- |
-| **`text-xs`** | `0.75rem` (12px) | `1rem` (16px) | Tooltips, element type labels, metadata, shortcuts |
-| **`text-sm`** | `0.875rem` (14px)| `1.25rem` (20px)| Secondary labels, input contents, list descriptions |
+| **`text-xs`** | `0.78125rem` (12.5px) | `1rem` (16px) | Tooltips, element type labels, metadata, shortcuts |
+| **`text-sm`** | `0.90625rem` (14.5px)| `1.25rem` (20px)| Secondary labels, input contents, list descriptions |
 | **`text-md`** | `1rem` (16px) | `1.5rem` (24px) | Body copy, primary action label, default inputs |
 | **`text-lg`** | `1.125rem` (18px)| `1.75rem` (28px)| Sub-headings, section titles inside sidebar |
 | **`text-xl`** | `1.25rem` (20px) | `1.875rem` (30px)| Panel headers, cards titles |
@@ -182,6 +201,7 @@ src/
 │   │   ├── right-sidebar.tsx       # Tab controller for styling & page configurations
 │   │   ├── right-sidebar/          # Subcomponents for right-sidebar tabs
 │   │   │   ├── custom-select.tsx   # Dropdown menu wrapper
+│   │   │   ├── color-picker.tsx    # Custom HSV portal-based color picker
 │   │   │   ├── page-settings-tab.tsx  # Global SEO, custom JS, and brand theme configurations
 │   │   │   ├── style-inspector-tab.tsx # Layout, padding/margin overrides, typography, and border controls
 │   │   │   └── content-inspector-tab.tsx # Parent containers and element label settings
@@ -207,7 +227,8 @@ src/
 4. **History Stack Dropdown**: Integrated directly into the top header navbar adjacent to the Undo/Redo buttons. Renders a compact state selector pill (`History (X/Y)`) that opens an overlay dropdown menu containing scrollable time-travel steps dynamically labeled based on elements added, deleted, edited, or reordered.
 5. **Left Sidebar Hover Previews**: Hovering any registry element card triggers a floating preview popover adjacent to the sidebar (`left-full ml-sm w-[280px]`). The popover uses the `animate-scaleIn` entry transition and centers its `top` position relative to the hovered item, clamped dynamically to remain within the visible vertical container height. It renders specific HTML mockups with custom, theme-compliant CSS keyframe animations.
 6. **Layers Panel**: The sidebar's Layers toggle exposes a page-root tree. Selecting a node selects its canvas element; nodes can be renamed, duplicated, and moved relative to siblings. Parent-child relationships use `parentId`, and expandable rows expose nested structures when present.
-7. **Custom Style Dropdowns**: To prevent native OS select element rendering glitches under browser zoom-out levels, and to maintain theme-palette compliance across dark/light modes, all styling selection controls in the sidebar must utilize custom DOM dropdown menus (`CustomSelect`) with absolute-positioned panels and full-screen backdrop click overlays for close handling.
+7. **Custom Style Dropdowns**: To prevent native OS select element rendering glitches under browser zoom-out levels, and to maintain theme-palette compliance across dark/light modes, all styling selection controls in the sidebar must utilize custom DOM dropdown menus (`CustomSelect`) with absolute-positioned panels, full-screen backdrop click overlays for close handling, and dynamic viewport-based upward/downward positioning to prevent options list clipping when space below is limited.
+8. **Custom Color Pickers**: To ensure a premium user experience and prevent native browser color picker dialog rendering glitches, all color selection controls must utilize the custom `ColorPicker` component. This component features an interactive HSV saturation-value area, hue/alpha sliders, format inputs (HEX, RGB, HSL), standard color swatches, recent colors saved in localStorage, and theme palette selections. It must render its popover using a React Portal to prevent layout clipping inside scrollable sidebars, and dynamically position itself near the trigger element.
 
 
 ---
@@ -266,3 +287,38 @@ All advanced layout controls inherit and cascade normally from Desktop through t
 To prevent horizontal overflow and layout breaking inside the visual canvas and compiled pages, layout components (`section`, `container`, and `grid-2`) enforce vertical-only margin utilities (`my-none` to `my-2xl`) rather than all-sides margin utilities (`m-none` to `m-2xl`):
 1. **Overflow Prevention**: Since layout components default to `width: 100%`, adding left and right margins would result in a total width of `100% + horizontal margins`, which pushes the elements past the viewport boundaries. Vertical-only margins (`my-`) keep the layout container centered and perfectly fitted.
 2. **Centering Rules Preservation**: Boxed layout modes use `mx-auto` (horizontal margin auto) to center the container within the workspace. Enforcing vertical-only margins ensures that custom margin adjustments do not override or break `mx-auto`.
+
+---
+
+## 8. Defensive Coding & Edge Cases Prevention
+
+To guarantee builder stability and compiled page security under nested layout operations, dynamic custom inputs, and local state persistence, the system implements the following defensive coding constraints:
+
+### A. LocalStorage & Multi-Tab State Integrity
+- **Nested Merging**: When recovering state configurations (`PageSettings`) from `localStorage` or tab-to-tab synchronization (`BroadcastChannel`), the merging logic must perform deep/nested merging on sub-objects (like `themePalette`). Shallow spreads of parent objects are banned to prevent older/partial configuration datasets from corrupting nested palette fields with `undefined` values.
+- **Array Verification**: Any canvas tree JSON loaded from local storage must be explicitly validated as an array prior to updating React state to prevent parsing errors/malformed objects from crashing the tree hierarchy.
+
+### B. Color Input Integrity & Verification
+- **Hex Code Regex Strictness**: The custom color picker validation only accepts standard CSS hex formats of lengths 3, 4, 6, and 8. Fuzzy ranges (`{3,8}`) are disallowed to prevent typing states of length 5 or 7 from resolving to weird colors or near-invisible transparency levels.
+- **Null Safety**: Helper functions converting colors (e.g. RGB/HSL/HEX mappings) must gracefully handle `null`, `undefined`, and non-string inputs by returning sensible default color structures rather than raising runtime type errors.
+- **RGB/RBG Channel Swap Prevention**: Color serialization to hex strings must strictly output in `#R-G-B` layout, avoiding any Green and Blue channel inversions.
+- **Hue Boundary Normalization**: Color math conversions must constrain the Hue parameter inside the `[0, 360)` range (e.g. via modulo 360 arithmetic) to prevent bounds overflows resulting in invalid color calculations.
+- **CSS Variable Resolution**: To ensure visual correctness of active selections, references to color variables (e.g., `var(--brand-cyan-active)`) must be resolved against the active page settings `themePalette` prior to mapping coordinate selectors.
+- **Space-Tolerant Matching**: Parsing of function-based color models (like RGB or HSL) must support spaces after parentheses and around parameter elements to tolerate manual user styling entries.
+- **Input Validation for Persistence**: Custom user inputs must be fully validated against supported patterns before being written to localStorage arrays (such as the recent colors cache).
+- **Saturation-Value Box Rendering**: The saturation-value draggable area must rely on standard CSS alpha composite stacking (normal blending) rather than `background-blend-mode: multiply` to prevent browser rendering bugs on transparent gradient layers.
+
+### C. Parentage Cycles and Layout Loop Prevention
+- **Descendant Selection Block**: When moving or nesting elements, the UI prevents creating recursive cycles (e.g. assigning a child or deep descendant container as the parent of its own ancestor container). The parent selection dropdown list is dynamically filtered to exclude the active element itself and all of its recursive descendants.
+
+### D. Security & Injection Guards in Compiled Pages
+- **HTML Character Escaping**: User settings directly compiled into document head metadata tags (e.g., `<title>`, `<meta name="description">`, `<link rel="icon">`) are passed through HTML character escapes to prevent tag breakout and arbitrary script injections.
+- **Script Tag Closures**: User-supplied Header Javascript scripts (`customJs`) are verified to prevent premature closure of script tags (`</script>`).
+
+### E. Touch Accessibility & Portal Positioning Synchronization
+- **Multi-Touch Support**: Slider surfaces must bind to touch-based events (`touchstart`, `touchmove`, `touchend`) to enable responsive control on mobile/tablet screens.
+- **Capture-Phase Window Listeners**: Window-level event bindings (such as `scroll`) must utilize capture propagation (`{ capture: true }`) to correctly intercept scrolling events from nested containers like sidebars, allowing accurate re-alignments of absolute-positioned Portal components.
+- **Draggable Handle Transitions**: Draggable elements (like the saturation-value pointer and slider handles) must not use CSS transitions (`transition-all`) while active to prevent cursor lag.
+
+
+
