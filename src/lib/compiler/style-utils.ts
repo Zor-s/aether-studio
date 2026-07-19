@@ -75,24 +75,32 @@ export const getStyleClasses = (
   if (s.fontWeight) classes.push(s.fontWeight);
   if (s.letterSpacing) classes.push(s.letterSpacing);
 
-  if (["section", "container"].includes(el.type)) {
-    classes.push("flex");
-
-    if (s.direction === "row") {
-      classes.push("flex-row");
+  if (["section", "container", "grid-2"].includes(el.type)) {
+    if (el.type === "grid-2") {
+      if (activeDevice === "mobile") {
+        classes.push("grid grid-cols-1");
+      } else {
+        classes.push("grid grid-cols-1 md:grid-cols-2");
+      }
     } else {
-      classes.push("flex-col");
+      classes.push("flex");
+
+      if (s.direction === "row") {
+        classes.push("flex-row");
+      } else {
+        classes.push("flex-col");
+      }
+
+      if (s.justify === "start") classes.push("justify-start");
+      else if (s.justify === "end") classes.push("justify-end");
+      else if (s.justify === "between") classes.push("justify-between");
+      else classes.push("justify-center");
+
+      if (s.alignItems === "start") classes.push("items-start");
+      else if (s.alignItems === "end") classes.push("items-end");
+      else if (s.alignItems === "stretch") classes.push("items-stretch");
+      else classes.push("items-center");
     }
-
-    if (s.justify === "start") classes.push("justify-start");
-    else if (s.justify === "end") classes.push("justify-end");
-    else if (s.justify === "between") classes.push("justify-between");
-    else classes.push("justify-center");
-
-    if (s.alignItems === "start") classes.push("items-start");
-    else if (s.alignItems === "end") classes.push("items-end");
-    else if (s.alignItems === "stretch") classes.push("items-stretch");
-    else classes.push("items-center");
 
     if (s.gap === "space-none") classes.push("gap-0");
     else if (s.gap === "space-xs") classes.push("gap-xs");

@@ -35,8 +35,8 @@ export default function Home() {
             <span className="text-white font-bold text-lg select-none">Æ</span>
           </div>
           <div>
-            <h1 className="text-md font-bold tracking-tight text-foreground leading-none">Aether Studio</h1>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[2px] font-semibold">Visual Platform</p>
+            <h1 className="text-md font-bold tracking-tight text-foreground leading-snug">Aether Studio</h1>
+            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[4px] font-semibold">Visual Platform</p>
           </div>
         </div>
 

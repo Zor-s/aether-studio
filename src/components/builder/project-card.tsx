@@ -76,7 +76,7 @@ export default function ProjectCard({ project, onOpenSettings, onOpenAnalytics }
         </div>
 
         {/* Domains List */}
-        <div className="flex flex-col gap-[2px] text-[11px] text-text-muted font-medium mt-[2px]">
+        <div className="flex flex-col gap-[4px] text-[11px] text-text-muted font-medium mt-[4px]">
           <span className="truncate flex items-center gap-xs">
             <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />

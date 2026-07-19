@@ -311,12 +311,54 @@ export default function ColorPicker({
       return [];
     }
   });
-  // Parse color to internal HSVA representation after resolving CSS variables
-  const resolvedValue = (value && typeof value === "string" && value.startsWith("var"))
-    ? themePalette?.[value.replace("var(--brand-", "").replace(")", "") as keyof typeof themePalette] || value
-    : value;
-  const rgba = parseColor(resolvedValue);
-  const hsva = rgbaToHsva(rgba);
+  // Helper to parse color to HSVA after resolving CSS variables
+  const getHsvaFromValue = useCallback((val: string) => {
+    const resolved = (val && typeof val === "string" && val.startsWith("var"))
+      ? themePalette?.[val.replace("var(--brand-", "").replace(")", "") as keyof typeof themePalette] || val
+      : val;
+    return rgbaToHsva(parseColor(resolved));
+  }, [themePalette]);
+
+  // Local HSVA representation for smooth real-time rendering
+  const [localHsva, setLocalHsva] = useState<HSVA>(() => getHsvaFromValue(value));
+
+  // Ref to always reference the latest localHsva without React closure captures
+  const localHsvaRef = useRef<HSVA>(localHsva);
+  localHsvaRef.current = localHsva;
+
+  // Refs for tracking active dragging state and values
+  const isDraggingRef = useRef(false);
+  const latestFormattedColorRef = useRef<string>("");
+  const pendingValueRef = useRef<string | null>(null);
+  const throttleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTimeRef = useRef<number>(0);
+
+  // Sync state from props when value or theme changes externally
+  const [prevValue, setPrevValue] = useState(value);
+  const [prevThemePalette, setPrevThemePalette] = useState(themePalette);
+  if (value !== prevValue || themePalette !== prevThemePalette) {
+    setPrevValue(value);
+    setPrevThemePalette(themePalette);
+    if (!isDraggingRef.current) {
+      const nextHsva = getHsvaFromValue(value);
+      setLocalHsva(nextHsva);
+      latestFormattedColorRef.current = formatColor(nextHsva, format);
+    }
+  }
+
+  // Update latestFormattedColorRef when localHsva or format changes
+  useEffect(() => {
+    latestFormattedColorRef.current = formatColor(localHsva, format);
+  }, [localHsva, format]);
+
+  // Clean up throttled timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current);
+      }
+    };
+  }, []);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -398,21 +440,88 @@ export default function ColorPicker({
         !triggerRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
-        addRecentColor(value);
+        if (latestFormattedColorRef.current) {
+          addRecentColor(latestFormattedColorRef.current);
+        }
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [isOpen, value, addRecentColor]);
+  }, [isOpen, addRecentColor]);
 
-  // Change handlers
-  const updateHsva = (newHsva: Partial<HSVA>) => {
-    const merged = { ...hsva, ...newHsva };
+  // Throttled parent onChange notifier to prevent re-render lagging during slides
+  const throttledOnChange = useCallback((formattedColor: string) => {
+    const limit = 60; // 60ms throttle duration (approx 16fps)
+    const now = Date.now();
+    const elapsed = now - lastTimeRef.current;
+
+    if (elapsed >= limit) {
+      onChange(formattedColor);
+      lastTimeRef.current = now;
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current);
+        throttleTimerRef.current = null;
+      }
+      pendingValueRef.current = null;
+    } else {
+      pendingValueRef.current = formattedColor;
+      if (!throttleTimerRef.current) {
+        throttleTimerRef.current = setTimeout(() => {
+          if (pendingValueRef.current !== null) {
+            onChange(pendingValueRef.current);
+            lastTimeRef.current = Date.now();
+            pendingValueRef.current = null;
+          }
+          throttleTimerRef.current = null;
+        }, limit - elapsed);
+      }
+    }
+  }, [onChange]);
+
+  // Immediate parent onChange notifier for click presets & drag endings
+  const flushOnChange = useCallback((finalColor: string) => {
+    if (throttleTimerRef.current) {
+      clearTimeout(throttleTimerRef.current);
+      throttleTimerRef.current = null;
+    }
+    onChange(finalColor);
+    lastTimeRef.current = Date.now();
+    pendingValueRef.current = null;
+  }, [onChange]);
+
+  // Unified color updater modifying local state instantly, while propagating changes
+  const updateHsva = useCallback((newHsva: Partial<HSVA>, isImmediate = false) => {
+    const merged = { ...localHsvaRef.current, ...newHsva };
+    setLocalHsva(merged);
     const formatted = formatColor(merged, format);
-    onChange(formatted);
-  };
+    latestFormattedColorRef.current = formatted;
+    if (isImmediate) {
+      flushOnChange(formatted);
+    } else {
+      throttledOnChange(formatted);
+    }
+  }, [format, throttledOnChange, flushOnChange]);
 
+  // Immediate color selector helper for quick presets/swatches clicks
+  const selectColor = useCallback((color: string) => {
+    const nextHsva = getHsvaFromValue(color);
+    setLocalHsva(nextHsva);
+    const formatted = formatColor(nextHsva, format);
+    latestFormattedColorRef.current = formatted;
+    flushOnChange(formatted);
+    addRecentColor(color);
+  }, [getHsvaFromValue, format, flushOnChange, addRecentColor]);
 
+  // End of drag handler flushing final changes
+  const handleDragEnd = useCallback(() => {
+    isDraggingRef.current = false;
+    if (pendingValueRef.current !== null) {
+      flushOnChange(pendingValueRef.current);
+    }
+    if (latestFormattedColorRef.current) {
+      addRecentColor(latestFormattedColorRef.current);
+    }
+  }, [flushOnChange, addRecentColor]);
 
   // Drag handler utility for coordinates
   const handleDrag = (
@@ -436,18 +545,20 @@ export default function ColorPicker({
     callback(x, y);
   };
 
-  // Drag listeners
+  // Drag listeners registering capturing triggers and final flushing
   const startDrag = (
     container: HTMLDivElement | null,
     callback: (x: number, y: number) => void,
     isTouch: boolean = false
   ) => {
     if (!container) return;
+    isDraggingRef.current = true;
     if (isTouch) {
       const moveListener = (e: TouchEvent) => handleDrag(e, container, callback);
       const upListener = () => {
         window.removeEventListener("touchmove", moveListener);
         window.removeEventListener("touchend", upListener);
+        handleDragEnd();
       };
       window.addEventListener("touchmove", moveListener, { passive: false });
       window.addEventListener("touchend", upListener);
@@ -456,16 +567,15 @@ export default function ColorPicker({
       const upListener = () => {
         window.removeEventListener("mousemove", moveListener);
         window.removeEventListener("mouseup", upListener);
+        handleDragEnd();
       };
       window.addEventListener("mousemove", moveListener);
       window.addEventListener("mouseup", upListener);
     }
   };
 
-
-
   // Selected hue base color HSL for Saturation-Value background
-  const hueBgColor = `hsl(${hsva.h}, 100%, 50%)`;
+  const hueBgColor = `hsl(${localHsva.h}, 100%, 50%)`;
 
   return (
     <>
@@ -541,8 +651,8 @@ export default function ColorPicker({
               {/* Draggable Circle pointer */}
               <div
                 style={{
-                  left: `${hsva.s}%`,
-                  top: `${100 - hsva.v}%`,
+                  left: `${localHsva.s}%`,
+                  top: `${100 - localHsva.v}%`,
                 }}
                 className="absolute w-3 h-3 border-2 border-white rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg cursor-pointer"
               />
@@ -562,7 +672,7 @@ export default function ColorPicker({
                 <div
                   className="absolute inset-0 w-full h-full"
                   style={{
-                    backgroundColor: formatColor(hsva, "rgb"),
+                    backgroundColor: formatColor(localHsva, "rgb"),
                   }}
                 />
               </div>
@@ -590,7 +700,7 @@ export default function ColorPicker({
                   }}
                 >
                   <div
-                    style={{ left: `${(hsva.h / 360) * 100}%` }}
+                    style={{ left: `${(localHsva.h / 360) * 100}%` }}
                     className="absolute w-3.5 h-3.5 bg-white border border-panel-border rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 shadow cursor-pointer"
                   />
                 </div>
@@ -623,7 +733,7 @@ export default function ColorPicker({
                     }}
                   />
                   <div
-                    style={{ left: `${hsva.a * 100}%` }}
+                    style={{ left: `${localHsva.a * 100}%` }}
                     className="absolute w-3.5 h-3.5 bg-white border border-panel-border rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 shadow cursor-pointer"
                   />
                 </div>
@@ -634,9 +744,9 @@ export default function ColorPicker({
             <div className="flex gap-xs items-center bg-background/50 border border-panel-border/30 rounded-lg p-xs">
               <input
                 type="text"
-                value={formatColor(hsva, format)}
+                value={formatColor(localHsva, format)}
                 readOnly
-                className="flex-1 text-[10px] text-foreground font-mono bg-transparent border-none text-left p-[2px] focus:outline-none select-all"
+                className="w-0 flex-1 text-[10px] text-foreground font-mono bg-transparent border-none text-left p-[2px] focus:outline-none select-all"
               />
               <button
                 type="button"
@@ -644,7 +754,7 @@ export default function ColorPicker({
                   const nextFormat = format === "hex" ? "rgb" : format === "rgb" ? "hsl" : "hex";
                   setFormat(nextFormat);
                 }}
-                className="text-[9px] uppercase tracking-wider font-bold bg-accent-soft text-cyan-active hover:bg-cyan-active/20 px-sm py-[3px] rounded-md transition-colors cursor-pointer"
+                className="shrink-0 text-[9px] uppercase tracking-wider font-bold bg-accent-soft text-cyan-active hover:bg-cyan-active/20 px-sm py-[3px] rounded-md transition-colors cursor-pointer"
               >
                 {format}
               </button>
@@ -669,10 +779,7 @@ export default function ColorPicker({
                       <button
                         key={color.key}
                         type="button"
-                        onClick={() => {
-                          onChange(color.hex);
-                          addRecentColor(color.hex);
-                        }}
+                        onClick={() => selectColor(color.hex)}
                         style={{ backgroundColor: color.hex }}
                         className={`h-6 rounded-md border cursor-pointer hover:scale-105 transition-all duration-150 relative ${
                           isSelected
@@ -705,10 +812,7 @@ export default function ColorPicker({
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => {
-                        onChange(color);
-                        addRecentColor(color);
-                      }}
+                      onClick={() => selectColor(color)}
                       className={`h-5 rounded-md border cursor-pointer hover:scale-105 transition-all relative bg-repeat bg-[size:4px_4px] ${
                         isSelected ? "border-cyan-active scale-105 ring-1 ring-cyan-active/30" : "border-panel-border/40"
                       }`}
@@ -751,7 +855,7 @@ export default function ColorPicker({
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => onChange(color)}
+                        onClick={() => selectColor(color)}
                         style={{ backgroundColor: color }}
                         className={`w-5 h-5 rounded-full border cursor-pointer hover:scale-105 transition-all duration-150 relative ${
                           isSelected

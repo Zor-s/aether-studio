@@ -17,6 +17,8 @@ interface HeaderProps {
   historyLength?: number;
   historyList?: CanvasElement[][];
   onJumpToHistoryStep?: (index: number) => void;
+  theme: "light" | "dark";
+  onThemeToggle: () => void;
 }
 
 export default function Header({
@@ -34,45 +36,11 @@ export default function Header({
   historyLength = 1,
   historyList = [],
   onJumpToHistoryStep = () => {},
+  theme,
+  onThemeToggle,
 }: HeaderProps) {
   const [syncStatus, setSyncStatus] = useState<"synced" | "saving">("synced");
   const [historyDropdownOpen, setHistoryDropdownOpen] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    let activeTheme: "light" | "dark" = "light";
-    if (storedTheme === "dark" || storedTheme === "light") {
-      activeTheme = storedTheme;
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      activeTheme = prefersDark ? "dark" : "light";
-    }
-    const timer = setTimeout(() => {
-      setTheme(activeTheme);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
 
   const simulateSave = () => {
     setSyncStatus("saving");
@@ -101,8 +69,8 @@ export default function Header({
             </div>
           </Link>
           <div className="hidden sm:block">
-            <h1 className="text-md font-bold tracking-tight text-foreground leading-none">Aether Studio</h1>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[2px] font-semibold">Visual Workspace</p>
+            <h1 className="text-md font-bold tracking-tight text-foreground leading-snug">Aether Studio</h1>
+            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[4px] font-semibold">Visual Workspace</p>
           </div>
           <div className="hidden md:flex items-center gap-xs border-l border-panel-border pl-md ml-sm">
             <Link
@@ -300,7 +268,7 @@ export default function Header({
 
         {/* Theme Toggle Button */}
         <button
-          onClick={toggleTheme}
+          onClick={onThemeToggle}
           className="flex items-center justify-center w-10 h-10 rounded-lg border border-panel-border bg-panel text-text-muted hover:bg-accent-soft hover:text-foreground transition-all duration-200 focus:outline-none cursor-pointer"
           title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
         >

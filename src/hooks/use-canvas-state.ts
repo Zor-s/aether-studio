@@ -239,15 +239,40 @@ export function useCanvasState(
             styles: { padding: "space-md", margin: "space-sm" },
           };
           break;
-        case "grid-2":
+        case "grid-2": {
+          const colAId = `${baseId}-col-a`;
+          const colBId = `${baseId}-col-b`;
+          const gridShortId = baseId.slice(-4);
           newEl = {
             id: baseId,
             type: "grid-2",
             category: "layout",
             content: "",
-            styles: { padding: "space-md", margin: "space-sm" },
+            styles: { padding: "space-none", margin: "space-sm" },
           };
-          break;
+          const colA: CanvasElement = {
+            id: colAId,
+            parentId: baseId,
+            type: "container",
+            category: "layout",
+            name: `Column A (Grid ${gridShortId})`,
+            content: "",
+            styles: { padding: "space-md", margin: "space-none" },
+          };
+          const colB: CanvasElement = {
+            id: colBId,
+            parentId: baseId,
+            type: "container",
+            category: "layout",
+            name: `Column B (Grid ${gridShortId})`,
+            content: "",
+            styles: { padding: "space-md", margin: "space-none" },
+          };
+          const nextElements = [...canvasElements, newEl, colA, colB];
+          commitChanges(nextElements);
+          setSelectedElement(newEl);
+          return;
+        }
         case "container":
           newEl = {
             id: baseId,
@@ -389,21 +414,63 @@ export function useCanvasState(
 
   const handleDuplicateElement = useCallback(
     (id: string) => {
+      const elementMap = new Map(canvasElements.map((el) => [el.id, el]));
+      const getDescendants = (parentId: string): CanvasElement[] => {
+        const result: CanvasElement[] = [];
+        canvasElements.forEach((el) => {
+          if (el.parentId === parentId) {
+            result.push(el);
+            result.push(...getDescendants(el.id));
+          }
+        });
+        return result;
+      };
+
+      const original = elementMap.get(id);
+      if (!original) return;
+
       const targetIdx = canvasElements.findIndex((el) => el.id === id);
       if (targetIdx === -1) return;
 
-      const original = canvasElements[targetIdx];
-      const clone: CanvasElement = {
-        ...original,
-        id: `el-${Date.now()}`,
-        name: original.name ? `${original.name} copy` : undefined,
-        styles: { ...original.styles },
+      const idMap = new Map<string, string>();
+      const timestamp = Date.now();
+      let cloneCounter = 0;
+
+      const cloneElement = (el: CanvasElement, newParentId?: string): CanvasElement => {
+        const newId = `el-${timestamp}-${cloneCounter++}`;
+        idMap.set(el.id, newId);
+        return {
+          ...el,
+          id: newId,
+          parentId: newParentId,
+          name: el.id === id ? (el.name ? `${el.name} copy` : undefined) : el.name,
+          styles: {
+            ...el.styles,
+            mobile: el.styles.mobile ? { ...el.styles.mobile } : undefined,
+            tablet: el.styles.tablet ? { ...el.styles.tablet } : undefined,
+          },
+        };
       };
 
+      const elementsToClone = [original, ...getDescendants(id)];
+      const clonedElements: CanvasElement[] = [];
+
+      // First pass: clone elements and populate idMap
+      elementsToClone.forEach((el) => {
+        const parentId = el.parentId;
+        let newParentId = undefined;
+        if (el.id !== id && parentId) {
+          newParentId = idMap.get(parentId);
+        } else {
+          newParentId = parentId; // Keep the same parent for the root cloned element
+        }
+        clonedElements.push(cloneElement(el, newParentId));
+      });
+
       const nextElements = [...canvasElements];
-      nextElements.splice(targetIdx + 1, 0, clone);
+      nextElements.splice(targetIdx + 1, 0, ...clonedElements);
       commitChanges(nextElements);
-      setSelectedElement(clone);
+      setSelectedElement(clonedElements[0]);
     },
     [canvasElements, commitChanges]
   );

@@ -38,11 +38,12 @@ export default function ContentInspectorTab({
   };
 
   const descendantIds = getDescendantIds(selectedElement.id);
+  const isGridColumn = selectedElement.parentId && canvasElements.some(parent => parent.id === selectedElement.parentId && parent.type === "grid-2");
 
   return (
     <div className="flex flex-col gap-md">
       {/* Parent Container Selector */}
-      {!["section"].includes(selectedElement.type) && (
+      {!["section"].includes(selectedElement.type) && !isGridColumn && (
         <div className="flex flex-col gap-xs">
           <label className="text-xs font-bold text-foreground">Parent Container</label>
           <CustomSelect
@@ -63,7 +64,7 @@ export default function ContentInspectorTab({
                 })),
             ]}
           />
-          <span className="text-[9px] text-text-muted mt-[2px] leading-relaxed">
+          <span className="text-[9px] text-text-muted mt-[4px] leading-relaxed">
             Choose a section or container block to nest this component inside.
           </span>
         </div>

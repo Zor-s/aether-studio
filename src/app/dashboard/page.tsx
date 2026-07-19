@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Header,
   LeftSidebar,
@@ -18,6 +18,33 @@ import { PageSettings } from "@/types/builder";
 
 export default function DashboardPage() {
   const { toasts, showToast, removeToast } = useToast();
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    let activeTheme: "light" | "dark" = "light";
+    if (storedTheme === "dark" || storedTheme === "light") {
+      activeTheme = storedTheme;
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      activeTheme = prefersDark ? "dark" : "light";
+    }
+    setTheme(activeTheme);
+  }, []);
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+  };
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
   const {
     activeDevice,
@@ -98,6 +125,8 @@ export default function DashboardPage() {
     <div className="flex flex-col h-screen overflow-hidden bg-background text-foreground transition-colors duration-200">
       {/* Visual Workspace Top Header */}
       <Header
+        theme={theme}
+        onThemeToggle={handleThemeToggle}
         activeDevice={activeDevice}
         setActiveDevice={setActiveDevice}
         previewMode={previewMode}
@@ -259,7 +288,7 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex-1 flex flex-col leading-none">
+                <div className="flex-1 flex flex-col leading-snug">
                   <span
                     className={`text-xs font-bold ${
                       publishStep >= 1 ? "text-foreground" : "text-text-muted"
@@ -267,7 +296,7 @@ export default function DashboardPage() {
                   >
                     Compile Visual Canvas Layout
                   </span>
-                  <span className="text-[10px] text-text-muted mt-[3px]">
+                  <span className="text-[10px] text-text-muted mt-[4px]">
                     Serializing workspace nodes to semantic HTML elements.
                   </span>
                 </div>
@@ -288,7 +317,7 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex-1 flex flex-col leading-none">
+                <div className="flex-1 flex flex-col leading-snug">
                   <span
                     className={`text-xs font-bold ${
                       publishStep >= 2 ? "text-foreground" : "text-text-muted"
@@ -296,7 +325,7 @@ export default function DashboardPage() {
                   >
                     Upload Assets to Cloudflare R2
                   </span>
-                  <span className="text-[10px] text-text-muted mt-[3px]">
+                  <span className="text-[10px] text-text-muted mt-[4px]">
                     Streaming bundles and HTML payload directly to object storage.
                   </span>
                 </div>
@@ -317,7 +346,7 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex-1 flex flex-col leading-none">
+                <div className="flex-1 flex flex-col leading-snug">
                   <span
                     className={`text-xs font-bold ${
                       publishStep >= 3 ? "text-foreground" : "text-text-muted"
@@ -325,7 +354,7 @@ export default function DashboardPage() {
                   >
                     Purge Edge CDN Cache Pools
                   </span>
-                  <span className="text-[10px] text-text-muted mt-[3px]">
+                  <span className="text-[10px] text-text-muted mt-[4px]">
                     Invalidating global caches to reflect latest portfolio changes.
                   </span>
                 </div>
@@ -478,6 +507,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
       <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );

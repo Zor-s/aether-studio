@@ -70,13 +70,8 @@ function compileElement(el: CanvasElement, allElements: CanvasElement[], palette
       </section>`;
     
     case 'grid-2':
-      return `<div id="${el.id}" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full ${styleClasses}" ${styleAttr}>
-        <div class="border border-dashed border-zinc-800/30 rounded-lg p-6 text-center bg-zinc-800/5">
-          <span class="text-[10px] text-zinc-500 italic">Column A</span>
-        </div>
-        <div class="border border-dashed border-zinc-800/30 rounded-lg p-6 text-center bg-zinc-800/5">
-          <span class="text-[10px] text-zinc-500 italic">Column B</span>
-        </div>
+      return `<div id="${el.id}" class="${styleClasses}" ${styleAttr}>
+        ${childrenHtml}
       </div>`;
 
     case 'container':

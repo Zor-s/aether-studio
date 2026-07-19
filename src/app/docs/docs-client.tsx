@@ -141,8 +141,8 @@ export default function DocsClient({ documents }: DocsClientProps) {
             </div>
           </Link>
           <div>
-            <h1 className="text-md font-bold tracking-tight text-foreground leading-none">Aether Portal</h1>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[2px] font-semibold">Dev Docs Hub</p>
+            <h1 className="text-md font-bold tracking-tight text-foreground leading-snug">Aether Portal</h1>
+            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[4px] font-semibold">Dev Docs Hub</p>
           </div>
         </div>
 

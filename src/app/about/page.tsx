@@ -19,8 +19,8 @@ export default function AboutPage() {
             </div>
           </Link>
           <div>
-            <h1 className="text-md font-bold tracking-tight text-foreground leading-none">Aether Portal</h1>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[2px] font-semibold">About Page</p>
+            <h1 className="text-md font-bold tracking-tight text-foreground leading-snug">Aether Portal</h1>
+            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[4px] font-semibold">About Page</p>
           </div>
         </div>
 

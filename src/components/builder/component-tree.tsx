@@ -16,6 +16,7 @@ interface ComponentTreeNodeProps extends Omit<ComponentTreeProps, "canvasElement
   element: CanvasElement;
   level: number;
   childrenByParent: Map<string, CanvasElement[]>;
+  canvasElements: CanvasElement[];
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -60,6 +61,7 @@ function TreeNode({
   onRenameElement,
   onDuplicateElement,
   onMoveElement,
+  canvasElements,
 }: ComponentTreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -67,6 +69,12 @@ function TreeNode({
   const children = childrenByParent.get(element.id) || [];
   const isSelected = selectedElementId === element.id;
   const nodeName = getNodeName(element);
+
+  const isGridColumn = useMemo(() => {
+    if (!element.parentId) return false;
+    const parent = canvasElements.find(el => el.id === element.parentId);
+    return parent?.type === "grid-2";
+  }, [element.parentId, canvasElements]);
 
   const beginRename = () => {
     setNameDraft(nodeName);
@@ -150,9 +158,14 @@ function TreeNode({
             <button type="button" onClick={(event) => { event.stopPropagation(); beginRename(); }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-panel" aria-label={`Rename ${nodeName}`} title="Rename">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m16.862 4.487 2.651 2.651M7.5 18.75l-4.25.75.75-4.25L14.513 4.737a1.875 1.875 0 0 1 2.651 2.651L7.5 18.75Z" /></svg>
             </button>
-            <button type="button" onClick={(event) => { event.stopPropagation(); onDuplicateElement(element.id); }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-panel" aria-label={`Duplicate ${nodeName}`} title="Duplicate">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 0 0 2 2h6M8 7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2V7Z" /></svg>
-            </button>
+            {!isGridColumn && (
+              <button type="button" onClick={(event) => { event.stopPropagation(); onDuplicateElement(element.id); }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-panel" aria-label={`Duplicate ${nodeName}`} title="Duplicate">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  <rect x="9" y="9" width="11" height="11" rx="2" ry="2" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                </svg>
+              </button>
+            )}
             <button type="button" onClick={(event) => { event.stopPropagation(); onMoveElement(element.id, "up"); }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-panel" aria-label={`Move ${nodeName} up`} title="Move up">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="m5 15 7-7 7 7" /></svg>
             </button>
@@ -176,6 +189,7 @@ function TreeNode({
               onRenameElement={onRenameElement}
               onDuplicateElement={onDuplicateElement}
               onMoveElement={onMoveElement}
+              canvasElements={canvasElements}
             />
           ))}
         </ul>
@@ -223,6 +237,7 @@ export default function ComponentTree(props: ComponentTreeProps) {
               onRenameElement={props.onRenameElement}
               onDuplicateElement={props.onDuplicateElement}
               onMoveElement={props.onMoveElement}
+              canvasElements={canvasElements}
             />
           ))}
         </ul>

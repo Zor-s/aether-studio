@@ -56,6 +56,7 @@
   --color-text-muted: var(--text-muted);
 
   /* Spacing Scale Classes (e.g. p-xs, m-md, gap-lg) */
+  --spacing-none: 0px;
   --spacing-xs: 0.25rem; /* 4px */
   --spacing-sm: 0.5rem;  /* 8px */
   --spacing-md: 1rem;    /* 16px */
@@ -147,6 +148,35 @@ body {
   background-image: 
     linear-gradient(to right, rgba(137, 214, 251, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(137, 214, 251, 0.03) 1px, transparent 1px);
+}
+
+/* Force light mode variables inside .light class container to isolate workspace canvas from global dark mode */
+.light {
+  --background: #f8fafc;
+  --foreground: var(--brand-dark-slate);
+  --panel-bg: #ffffff;
+  --panel-border: rgba(2, 87, 122, 0.15);
+  --accent-soft: var(--brand-ice-blue);
+  --accent-highlight: var(--brand-sky-blue);
+  --accent-primary: var(--brand-cyan-active);
+  --text-muted: var(--brand-deep-teal);
+}
+
+.light.canvas-grid,
+.light .canvas-grid {
+  background-image: 
+    linear-gradient(to right, rgba(2, 87, 122, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(2, 87, 122, 0.04) 1px, transparent 1px) !important;
+}
+
+.light.custom-scrollbar::-webkit-scrollbar-thumb,
+.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(2, 87, 122, 0.25) !important;
+}
+
+.light.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 87, 122, 0.45) !important;
 }
 
 /* Override extremely small hardcoded font sizes to be more readable */

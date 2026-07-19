@@ -142,7 +142,7 @@ export default function StyleInspectorTab({
   ) => {
     const overridden = isOverridden(key);
     return (
-      <div className="flex items-center justify-between mb-[2px] w-full">
+      <div className="flex items-center justify-between mb-[4px] w-full">
         <label
           className={`text-[10px] font-semibold transition-colors duration-200 ${
             overridden ? "text-cyan-active font-bold" : "text-text-muted"
@@ -249,28 +249,30 @@ export default function StyleInspectorTab({
       </div>
 
       {/* Layout Settings Section (Only visible for section / container layout components) */}
-      {["section", "container"].includes(selectedElement.type) && (
+      {["section", "container", "grid-2"].includes(selectedElement.type) && (
         <div className="flex flex-col gap-sm border-t border-panel-border/40 pt-sm">
           <span className="text-xs font-bold text-foreground">Container Layout Settings</span>
 
           {/* Flex Direction & Gap */}
           <div className="grid grid-cols-2 gap-sm">
             {/* Flex Direction */}
-            <div className="flex flex-col gap-xs">
-              {renderLabel("direction", "Flex Direction")}
-              <CustomSelect
-                value={getStyleValue("direction") || "col"}
-                onChange={(val) => handleStyleChange("direction", val)}
-                options={[
-                  { value: "col", label: "Vertical (Column)" },
-                  { value: "row", label: "Horizontal (Row)" },
-                ]}
-              />
-            </div>
+            {selectedElement.type !== "grid-2" && (
+              <div className="flex flex-col gap-xs">
+                {renderLabel("direction", "Flex Direction")}
+                <CustomSelect
+                  value={getStyleValue("direction") || "col"}
+                  onChange={(val) => handleStyleChange("direction", val)}
+                  options={[
+                    { value: "col", label: "Vertical (Column)" },
+                    { value: "row", label: "Horizontal (Row)" },
+                  ]}
+                />
+              </div>
+            )}
 
             {/* Flex Gap spacing */}
-            <div className="flex flex-col gap-xs">
-              {renderLabel("gap", "Flex Item Gap")}
+            <div className={`flex flex-col gap-xs ${selectedElement.type === "grid-2" ? "col-span-2" : ""}`}>
+              {renderLabel("gap", selectedElement.type === "grid-2" ? "Grid Column Gap" : "Flex Item Gap")}
               <CustomSelect
                 value={getStyleValue("gap") || "space-md"}
                 onChange={(val) => handleStyleChange("gap", val)}
@@ -288,37 +290,39 @@ export default function StyleInspectorTab({
           </div>
 
           {/* Main Axis Align & Cross Axis Align */}
-          <div className="grid grid-cols-2 gap-sm">
-            {/* Main-Axis Alignment (Justify Content) */}
-            <div className="flex flex-col gap-xs">
-              {renderLabel("justify", "Justify Content")}
-              <CustomSelect
-                value={getStyleValue("justify") || "center"}
-                onChange={(val) => handleStyleChange("justify", val)}
-                options={[
-                  { value: "center", label: "Center" },
-                  { value: "start", label: "Start (Left/Top)" },
-                  { value: "end", label: "End (Right/Bottom)" },
-                  { value: "between", label: "Space Between" },
-                ]}
-              />
-            </div>
+          {selectedElement.type !== "grid-2" && (
+            <div className="grid grid-cols-2 gap-sm">
+              {/* Main-Axis Alignment (Justify Content) */}
+              <div className="flex flex-col gap-xs">
+                {renderLabel("justify", "Justify Content")}
+                <CustomSelect
+                  value={getStyleValue("justify") || "center"}
+                  onChange={(val) => handleStyleChange("justify", val)}
+                  options={[
+                    { value: "center", label: "Center" },
+                    { value: "start", label: "Start (Left/Top)" },
+                    { value: "end", label: "End (Right/Bottom)" },
+                    { value: "between", label: "Space Between" },
+                  ]}
+                />
+              </div>
 
-            {/* Cross-Axis Alignment (Align Items) */}
-            <div className="flex flex-col gap-xs">
-              {renderLabel("alignItems", "Align Items")}
-              <CustomSelect
-                value={getStyleValue("alignItems") || "center"}
-                onChange={(val) => handleStyleChange("alignItems", val)}
-                options={[
-                  { value: "center", label: "Center" },
-                  { value: "start", label: "Start" },
-                  { value: "end", label: "End" },
-                  { value: "stretch", label: "Stretch" },
-                ]}
-              />
+              {/* Cross-Axis Alignment (Align Items) */}
+              <div className="flex flex-col gap-xs">
+                {renderLabel("alignItems", "Align Items")}
+                <CustomSelect
+                  value={getStyleValue("alignItems") || "center"}
+                  onChange={(val) => handleStyleChange("alignItems", val)}
+                  options={[
+                    { value: "center", label: "Center" },
+                    { value: "start", label: "Start" },
+                    { value: "end", label: "End" },
+                    { value: "stretch", label: "Stretch" },
+                  ]}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Width containment & Min Height */}
           <div className="grid grid-cols-2 gap-sm">
@@ -535,12 +539,12 @@ export default function StyleInspectorTab({
           {/* Main Color Picker (Background for layouts/buttons, Text for others) */}
           <div className="flex items-center justify-between gap-sm">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-foreground leading-none">
+              <span className="text-[10px] font-bold text-foreground leading-snug">
                 {["button", "section", "container", "grid-2"].includes(selectedElement.type)
                   ? "Background Color"
                   : "Text Color"}
               </span>
-              <span className="text-[8px] text-text-muted mt-[2px] leading-tight">
+              <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
                 {["button", "section", "container", "grid-2"].includes(selectedElement.type)
                   ? "Adjust container fill"
                   : "Adjust typography fill"}
@@ -577,8 +581,8 @@ export default function StyleInspectorTab({
           ) && (
             <div className="flex items-center justify-between gap-sm border-t border-panel-border/30 pt-sm">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-foreground leading-none">Border Radius</span>
-                <span className="text-[8px] text-text-muted mt-[2px] leading-tight">
+                <span className="text-[10px] font-bold text-foreground leading-snug">Border Radius</span>
+                <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
                   Smooth component corners
                 </span>
               </div>
@@ -604,8 +608,8 @@ export default function StyleInspectorTab({
           {/* Border Style Toggle */}
           <div className="flex items-center justify-between gap-sm border-t border-panel-border/30 pt-sm">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-foreground leading-none">Border Style</span>
-              <span className="text-[8px] text-text-muted mt-[2px] leading-tight">
+              <span className="text-[10px] font-bold text-foreground leading-snug">Border Style</span>
+              <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
                 Add container outlines
               </span>
             </div>

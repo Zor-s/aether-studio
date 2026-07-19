@@ -54,9 +54,29 @@ We map the variables dynamically under `:root` and `.dark` selectors inside `src
 ```
 
 > [!TIP]
-> The theme toggle switch is managed within [header.tsx](file:///home/zors/Git%20repositories/aether-studio/src/components/builder/header.tsx). It dynamically applies/removes `.dark` from the root document class list, persisting settings in `localStorage` under `theme` to prevent page load layout flashes.
+> The theme toggle switch is managed within [page.tsx](file:///home/zors/Git%20repositories/aether-studio/src/app/dashboard/page.tsx). It dynamically applies the `.dark` class to `document.documentElement` (`<html>` element) to toggle dark mode globally across all panels, sidebars, dialogs, and portals.
 
-### C. Dynamic Theme Palette Customization
+### C. Workspace Canvas Isolation from Global Dark Mode
+To maintain a true WYSIWYG experience, the visual workspace canvas (simulated devices, canvas elements, grid background, and scrollbars) must remain completely isolated from the builder's own dark mode state. 
+
+This is achieved by applying the `.light` class to the root wrapper of the workspace canvas. The `.light` class in `globals.css` overrides the CSS variables back to their standard light mode presets:
+
+```css
+.light {
+  --background: #f8fafc;
+  --foreground: var(--brand-dark-slate);
+  --panel-bg: #ffffff;
+  --panel-border: rgba(2, 87, 122, 0.15);
+  --accent-soft: var(--brand-ice-blue);
+  --accent-highlight: var(--brand-sky-blue);
+  --accent-primary: var(--brand-cyan-active);
+  --text-muted: var(--brand-deep-teal);
+}
+```
+
+Additionally, `.canvas-grid` and scrollbar thumb rules are overridden within `.light` to prevent them from adopting dark-mode line colors or thumb styling. To ensure canvas elements (Headline, Subheading, Paragraph, etc.) respect the user's custom page settings color values, they inherit color styling dynamically instead of overriding it with hardcoded `text-foreground` or `text-text-muted` classes.
+
+### D. Dynamic Theme Palette Customization
 
 Aether Studio supports real-time customization of the design color palette. Through the global Page Settings panel, builders can choose from several curated theme presets or configure each of the 5 core brand color tokens individually:
 
@@ -78,7 +98,7 @@ Aether Studio supports real-time customization of the design color palette. Thro
    ```
 3. **Contrast Calculation**: Button components calculate contrast foreground colors dynamically. If the button background matches a light accent color (like `iceBlue` or `skyBlue`), it defaults its text color to `var(--brand-dark-slate)`; otherwise, it renders white (`#ffffff`).
 
-### D. Global Page Styles & Layout Customization
+### E. Global Page Styles & Layout Customization
 
 Aether Studio supports page-level style overrides and layout alignment configurations that apply globally to the compiled document and align edit-mode workspace visual frames in a true WYSIWYG experience:
 
@@ -108,6 +128,7 @@ The spacing scale relies on multipliers of `4px` (`0.25rem`) to maintain perfect
 
 | Name | Rem Value | Pixel Value | Typical Use Cases |
 | :--- | :--- | :--- | :--- |
+| **`space-none`**| `0rem` | `0px` | Reset margin, padding, or gap styles |
 | **`space-xs`** | `0.25rem` | `4px` | Tiny gaps between icon and text, micro-paddings |
 | **`space-sm`** | `0.5rem` | `8px` | Gap between list items, padding for inner components |
 | **`space-md`** | `1rem` | `16px` | Card/panel padding, component gaps, general layout padding |
@@ -150,6 +171,11 @@ Sidebar panels and components must lock to strict pixel sizes to prevent layout 
   - Input/Button: `8px` (`rounded-lg`)
   - Sidebars/Tooltips: `12px` (`rounded-xl`)
   - Dashboard Cards: `16px` (`rounded-2xl`)
+
+### E. Spacing for Labels & Descriptions (Preventing Text Collision)
+To ensure proper vertical rhythm and readability throughout the dashboard interface, adjacent text blocks (such as a label/header and its subtext/description) must adhere to these defensive layout rules:
+1. **Avoid `leading-none` on Text Elements with Descriptions**: The `leading-none` utility forces a tight line-height of `1` which risks text collision or overlap (especially for letters with descenders/ascenders). Instead, use `leading-snug`, `leading-normal`, or let elements inherit standard text line heights.
+2. **Defensive Margins and Gaps**: Descriptions or subtexts stacked under labels must not use layout margins smaller than `4px`. Replace instances of `mt-[2px]` or `mb-[2px]` with `mt-xs` (`mt-[4px]`) or `mb-xs` (`mb-[4px]`) to give elements breathing room. When using flexboxes, utilize a vertical gap scale of `gap-xs` or `gap-sm` instead of extremely small custom layouts.
 
 ---
 
@@ -228,24 +254,13 @@ src/
 5. **Left Sidebar Hover Previews**: Hovering any registry element card triggers a floating preview popover adjacent to the sidebar (`left-full ml-sm w-[280px]`). The popover uses the `animate-scaleIn` entry transition and centers its `top` position relative to the hovered item, clamped dynamically to remain within the visible vertical container height. It renders specific HTML mockups with custom, theme-compliant CSS keyframe animations.
 6. **Layers Panel**: The sidebar's Layers toggle exposes a page-root tree. Selecting a node selects its canvas element; nodes can be renamed, duplicated, and moved relative to siblings. Parent-child relationships use `parentId`, and expandable rows expose nested structures when present.
 7. **Custom Style Dropdowns**: To prevent native OS select element rendering glitches under browser zoom-out levels, and to maintain theme-palette compliance across dark/light modes, all styling selection controls in the sidebar must utilize custom DOM dropdown menus (`CustomSelect`) with absolute-positioned panels, full-screen backdrop click overlays for close handling, and dynamic viewport-based upward/downward positioning to prevent options list clipping when space below is limited.
-8. **Custom Color Pickers**: To ensure a premium user experience and prevent native browser color picker dialog rendering glitches, all color selection controls must utilize the custom `ColorPicker` component. This component features an interactive HSV saturation-value area, hue/alpha sliders, format inputs (HEX, RGB, HSL), standard color swatches, recent colors saved in localStorage, and theme palette selections. It must render its popover using a React Portal to prevent layout clipping inside scrollable sidebars, and dynamically position itself near the trigger element.
+8. Custom Color Pickers: To ensure a premium user experience and prevent native browser color picker dialog rendering glitches, all color selection controls must utilize the custom `ColorPicker` component. This component features an interactive HSV saturation-value area, hue/alpha sliders, format inputs (HEX, RGB, HSL), standard color swatches, recent colors saved in localStorage, and theme palette selections. It must render its popover using a React Portal to prevent layout clipping inside scrollable sidebars, and dynamically position itself near the trigger element. To ensure fluid 60fps interaction during drags and slides, the color picker uses local state tracking (`localHsva`) for the active drag value. Updates to the parent element styles are throttled (using a trailing-edge throttle of 60ms) to prevent heavy canvas re-renders from blocking browser input events, while final color values are instantly flushed upon drag completion (`mouseup`/`touchend`).
+9. **Action Icons Visual Clarity**: To ensure toolbars and action controls are highly intuitive and visually distinct, icons representing duplicate actions must use overlapping offset rectangles (representing cloning or copying) rather than aligned overlapping boundaries that risk visual blending or merging.
 
 
 ---
 
-## 5. Implementation Roadmap for UI
-
-Our plan to build the UI proceeds step-by-step:
-
-1. **Setup Tailwinds & Design Variables**: Configure `src/app/globals.css` with the colors, themes, font scales, and layout variables.
-2. **Design Root Layout**: Build the shell with the responsive wrapper, sidebar slots, and canvas workspace.
-3. **Build the Header & Left Sidebar**: Create lists of design elements available for builder canvas selection.
-4. **Build the Inspector Sidebar**: Construct inputs for color toggling and padding ranges.
-5. **Build the Canvas Wrapper**: Include the device frames (Mobile/Tablet/Desktop iframe simulation).
-
----
-
-## 6. Tailwind CSS v4 Spacing & Max-Width Caveats
+## 5. Tailwind CSS v4 Spacing & Max-Width Caveats
 
 > [!WARNING]
 > When defining custom spacing tokens inside the `@theme` directive in Tailwind CSS v4 (e.g., `--spacing-lg: 1.5rem`), Tailwind replaces its default spacing keys.
@@ -265,9 +280,9 @@ Our plan to build the UI proceeds step-by-step:
 
 ---
 
-## 7. Container Layout & Alignment Settings
+## 6. Container Layout & Alignment Settings
 
-To maximize layout flexibility, the **Section Container** and **Standard Wrapper** components support advanced flex alignment options.
+To maximize layout flexibility, the **Section Container**, **Standard Wrapper**, and **Two-Column Grid** components support advanced layout and alignment options.
 
 ### A. Layout Settings Specification
 
@@ -276,21 +291,37 @@ To maximize layout flexibility, the **Section Container** and **Standard Wrapper
 | **Flex Direction** | `direction` | `"col"` (default), `"row"` | `flex-col`, `flex-row` | `flex-direction: column / row` |
 | **Justify Content** | `justify` | `"center"` (default), `"start"`, `"end"`, `"between"` | `justify-center`, `justify-start`, `justify-end`, `justify-between` | `justify-content: center / flex-start / flex-end / space-between` |
 | **Align Items** | `alignItems` | `"center"` (default), `"start"`, `"end"`, `"stretch"` | `items-center`, `items-start`, `items-end`, `items-stretch` | `align-items: center / flex-start / flex-end / stretch` |
-| **Flex Item Gap** | `gap` | `"space-none"`, `"space-xs"`, `"space-sm"`, `"space-md"` (default), `"space-lg"`, `"space-xl"`, `"space-2xl"` | `gap-0`, `gap-xs`, `gap-sm`, `gap-md`, `gap-lg`, `gap-xl`, `gap-2xl` | `gap: 0 / 0.25rem / 0.5rem / 1rem / 1.5rem / 2rem / 3rem` |
+| **Flex/Grid Item Gap** | `gap` | `"space-none"`, `"space-xs"`, `"space-sm"`, `"space-md"` (default), `"space-lg"`, `"space-xl"`, `"space-2xl"` | `gap-0`, `gap-xs`, `gap-sm`, `gap-md`, `gap-lg`, `gap-xl`, `gap-2xl` | `gap: 0 / 0.25rem / 0.5rem / 1rem / 1.5rem / 2rem / 3rem` |
 | **Width Limit** | `widthMode` | `"full"` (default), `"boxed-sm"`, `"boxed-md"`, `"boxed-lg"`, `"boxed-xl"` | `w-full`, `max-w-[384px] mx-auto w-full`, `max-w-[448px] mx-auto w-full`, `max-w-[512px] mx-auto w-full`, `max-w-[576px] mx-auto w-full` | `max-width: 100% / 384px / 448px / 512px / 576px` |
 | **Minimum Height** | `minHeight` | `"auto"` (default), `"screen"`, `"h-300"`, `"h-500"`, `"h-700"` | `min-h-auto`, `min-h-screen`, custom style mapping | `min-height: auto / 100vh / 300px / 500px / 700px` |
 
-### B. Responsive Behaviors & Compilation
+### B. Two-Column Grid Component (`grid-2`) Specification
+The Two-Column Grid component renders a responsive 50/50 block layout grid (`grid grid-cols-1 md:grid-cols-2`). 
+1. **Nested Columns Architecture**: Adding a `grid-2` component automatically instantiates two child container elements (Column A and Column B). These represent the left and right columns respectively.
+2. **Defensive Layout Constraints**:
+   - Column A and Column B are structural layouts locked inside their parent grid. They cannot be deleted or duplicated individually.
+   - The Parent Container selector is hidden for Column A and Column B to prevent them from being moved outside the grid context.
+   - Deep/Recursive Duplication: Duplicating the parent `grid-2` component clones the grid alongside Column A, Column B, and all of their nested elements, preserving hierarchy references.
+3. **Customizable Options**: The parent `grid-2` component supports customizable item Gap (spacing between columns), Width Limit, Border Radius, Background Color, and margins.
+4. **Simulated Viewport Resolution**: When rendering in the editor's edit-mode canvas, the grid dynamic classes are resolved against the active device simulation frame. Under mobile simulation, the column layout automatically resolves to a stacked single-column (`grid-cols-1`) format to guarantee visual correctness without relying on browser window media queries.
+
+### C. Responsive Behaviors & Compilation
 All advanced layout controls inherit and cascade normally from Desktop through to Tablet and Mobile viewport settings. Tablet and Mobile overrides generate media-query targeted style rules referencing unique element IDs (e.g. `#el-id`) to override utility class defaults, ensuring exact responsive fidelity.
 
-### C. Spacing and Margins Constraints
+### D. Spacing and Margins Constraints
 To prevent horizontal overflow and layout breaking inside the visual canvas and compiled pages, layout components (`section`, `container`, and `grid-2`) enforce vertical-only margin utilities (`my-none` to `my-2xl`) rather than all-sides margin utilities (`m-none` to `m-2xl`):
 1. **Overflow Prevention**: Since layout components default to `width: 100%`, adding left and right margins would result in a total width of `100% + horizontal margins`, which pushes the elements past the viewport boundaries. Vertical-only margins (`my-`) keep the layout container centered and perfectly fitted.
 2. **Centering Rules Preservation**: Boxed layout modes use `mx-auto` (horizontal margin auto) to center the container within the workspace. Enforcing vertical-only margins ensures that custom margin adjustments do not override or break `mx-auto`.
 
+### E. Workspace Canvas Empty Placeholders (Edit Mode)
+To ensure structural visibility while building without affecting production CSS/HTML outputs, empty container components display solid/shadowed placeholder cards on the canvas when `!previewMode` is active:
+- **Section Container**: Renders a card (`border border-panel-border rounded-xl p-md bg-panel shadow-sm`) with an italic selection guide indicator.
+- **Standard Wrapper**: Renders a card (`border border-panel-border rounded-xl p-md bg-panel shadow-sm`) with an italic selection guide indicator.
+- **Two-Column Grid**: If empty/devoid of children, renders two balanced column cards inside it with the same card indicators.
+
 ---
 
-## 8. Defensive Coding & Edge Cases Prevention
+## 7. Defensive Coding & Edge Cases Prevention
 
 To guarantee builder stability and compiled page security under nested layout operations, dynamic custom inputs, and local state persistence, the system implements the following defensive coding constraints:
 
@@ -307,6 +338,9 @@ To guarantee builder stability and compiled page security under nested layout op
 - **Space-Tolerant Matching**: Parsing of function-based color models (like RGB or HSL) must support spaces after parentheses and around parameter elements to tolerate manual user styling entries.
 - **Input Validation for Persistence**: Custom user inputs must be fully validated against supported patterns before being written to localStorage arrays (such as the recent colors cache).
 - **Saturation-Value Box Rendering**: The saturation-value draggable area must rely on standard CSS alpha composite stacking (normal blending) rather than `background-blend-mode: multiply` to prevent browser rendering bugs on transparent gradient layers.
+- **State Isolation & Syncing**: Keep active dragging coordinate calculations completely decoupled from canvas re-renders. Synchronize local state with the `value` prop only when not dragging (`!isDraggingRef.current`) to prevent round-trip conversion rendering glitches or feedback loop jitter.
+- **Side-Effect-Free State Updaters**: Never trigger parent component notifications (like `onChange`) inside React `setState` functional updater callbacks, as this violates React's render phase purity. Keep state setters pure and run side effects directly in the event handlers using refs for the latest local state values.
+- **Format Input Layout & Overflow Prevention**: The color format text input must utilize flex layout classes including `w-0 flex-1` to allow it to shrink below its default content width, and the format toggler button must declare `shrink-0` to prevent container layout breaks and overflow glitches in narrow sidebars.
 
 ### C. Parentage Cycles and Layout Loop Prevention
 - **Descendant Selection Block**: When moving or nesting elements, the UI prevents creating recursive cycles (e.g. assigning a child or deep descendant container as the parent of its own ancestor container). The parent selection dropdown list is dynamically filtered to exclude the active element itself and all of its recursive descendants.

@@ -124,6 +124,7 @@ export default function WorkspaceCanvas({
     
     // Find children of this element
     const children = canvasElements.filter(child => child.parentId === el.id);
+    const isGridColumn = el.parentId && canvasElements.some(parent => parent.id === el.parentId && parent.type === "grid-2");
 
     return (
       <div
@@ -236,32 +237,37 @@ export default function WorkspaceCanvas({
               </svg>
             </button>
             {/* Duplicate */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicateElement(el.id);
-              }}
-              className="p-[3px] hover:bg-white/10 rounded transition-colors"
-              title="Duplicate Element"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7v8a2 2 0 002 2h6M8 7a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H10a2 2 0 01-2-2V7z" />
-              </svg>
-            </button>
+            {!isGridColumn && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicateElement(el.id);
+                }}
+                className="p-[3px] hover:bg-white/10 rounded transition-colors"
+                title="Duplicate Element"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  <rect x="9" y="9" width="11" height="11" rx="2" ry="2" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} />
+                </svg>
+              </button>
+            )}
             {/* Delete */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteElement(el.id);
-                setSelectedElementId(null);
-              }}
-              className="p-[3px] hover:bg-red-500 rounded transition-colors"
-              title="Delete Element"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+            {!isGridColumn && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteElement(el.id);
+                  setSelectedElementId(null);
+                }}
+                className="p-[3px] hover:bg-red-500 rounded transition-colors"
+                title="Delete Element"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
@@ -271,7 +277,7 @@ export default function WorkspaceCanvas({
             {children.length > 0 ? (
               children.map(child => renderElement(child))
             ) : !previewMode ? (
-              <div className="w-full flex flex-col gap-md justify-center items-center border border-dashed border-panel-border/40 rounded-xl bg-background/20 p-md min-h-[80px]">
+              <div className="w-full flex flex-col gap-md border border-panel-border rounded-xl p-md bg-panel shadow-sm">
                 <span className="text-[10px] text-text-muted select-none italic font-medium">Empty Section Container (Choose this as parent in other block settings to nest components)</span>
               </div>
             ) : null}
@@ -279,14 +285,20 @@ export default function WorkspaceCanvas({
         )}
 
         {el.type === "grid-2" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-md w-full">
-            <div className="border border-dashed border-panel-border/30 rounded-lg p-md text-center bg-background/10">
-              <span className="text-[10px] text-text-muted italic">Column A</span>
-            </div>
-            <div className="border border-dashed border-panel-border/30 rounded-lg p-md text-center bg-background/10">
-              <span className="text-[10px] text-text-muted italic">Column B</span>
-            </div>
-          </div>
+          <>
+            {children.length > 0 ? (
+              children.map(child => renderElement(child))
+            ) : !previewMode ? (
+              <>
+                <div className="w-full border border-panel-border rounded-xl p-md bg-panel shadow-sm text-center py-lg">
+                  <span className="text-[10px] text-text-muted italic">Column A</span>
+                </div>
+                <div className="w-full border border-panel-border rounded-xl p-md bg-panel shadow-sm text-center py-lg">
+                  <span className="text-[10px] text-text-muted italic">Column B</span>
+                </div>
+              </>
+            ) : null}
+          </>
         )}
 
         {el.type === "container" && (
@@ -294,21 +306,27 @@ export default function WorkspaceCanvas({
             {children.length > 0 ? (
               children.map(child => renderElement(child))
             ) : !previewMode ? (
-              <div className="w-full flex flex-col gap-md border border-panel-border rounded-xl p-md bg-panel shadow-sm">
-                <span className="text-[10px] text-text-muted select-none italic font-medium">Standard Content Wrapper (Choose this as parent in other block settings to nest components)</span>
-              </div>
+              isGridColumn ? (
+                <div className="w-full border border-panel-border rounded-xl p-md bg-panel shadow-sm text-center py-lg">
+                  <span className="text-[10px] text-text-muted italic">{el.name || "Column"} (Empty)</span>
+                </div>
+              ) : (
+                <div className="w-full flex flex-col gap-md border border-panel-border rounded-xl p-md bg-panel shadow-sm">
+                  <span className="text-[10px] text-text-muted select-none italic font-medium">Standard Content Wrapper (Choose this as parent in other block settings to nest components)</span>
+                </div>
+              )
             ) : null}
           </>
         )}
 
         {el.type === "headline" && (
-          <h2 className="font-extrabold tracking-tight leading-tight text-foreground select-none">
+          <h2 className="font-extrabold tracking-tight leading-tight select-none">
             {el.content}
           </h2>
         )}
 
         {el.type === "paragraph" && (
-          <p className="leading-relaxed text-text-muted font-medium select-none">
+          <p className="leading-relaxed opacity-80 font-medium select-none">
             {el.content}
           </p>
         )}
@@ -325,19 +343,19 @@ export default function WorkspaceCanvas({
         )}
 
         {el.type === "subheading" && (
-          <h3 className="font-semibold tracking-tight text-foreground select-none">
+          <h3 className="font-semibold tracking-tight select-none">
             {el.content}
           </h3>
         )}
 
         {el.type === "blockquote" && (
-          <blockquote className="border-l-4 border-cyan-active pl-md italic text-text-muted font-medium select-none bg-accent-soft/10 py-xs rounded-r-md">
+          <blockquote className="border-l-4 border-cyan-active pl-md italic opacity-85 font-medium select-none bg-accent-soft/10 py-xs rounded-r-md">
             {el.content}
           </blockquote>
         )}
 
         {el.type === "list" && (
-          <ul className="list-disc pl-md text-text-muted select-none flex flex-col gap-xs">
+          <ul className="list-disc pl-md opacity-80 select-none flex flex-col gap-xs">
             {el.content.split('\n').filter(Boolean).map((item, idx) => (
               <li key={idx} className="font-medium">{item}</li>
             ))}
@@ -353,7 +371,7 @@ export default function WorkspaceCanvas({
 
   return (
     <div
-      className="flex-1 bg-background canvas-grid overflow-y-auto custom-scrollbar flex items-start justify-center p-md sm:p-xl select-none"
+      className="light flex-1 bg-background canvas-grid overflow-y-auto custom-scrollbar flex items-start justify-center p-md sm:p-xl select-none"
       onClick={() => {
         if (!previewMode) {
           setSelectedElementId(null);

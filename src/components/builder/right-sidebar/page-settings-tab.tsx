@@ -375,8 +375,8 @@ export default function PageSettingsTab({
               {/* Page Background Selector */}
               <div className="flex items-center justify-between gap-sm">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-foreground leading-none">Page Background</span>
-                  <span className="text-[8px] text-text-muted mt-[2px] leading-tight">Overall backdrop color</span>
+                  <span className="text-[10px] font-bold text-foreground leading-snug">Page Background</span>
+                  <span className="text-[8px] text-text-muted mt-[4px] leading-normal">Overall backdrop color</span>
                 </div>
                 <div className="flex items-center gap-xs">
                   <input
@@ -396,8 +396,8 @@ export default function PageSettingsTab({
               {/* Page Base Text Selector */}
               <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-foreground leading-none">Body Text Color</span>
-                  <span className="text-[8px] text-text-muted mt-[2px] leading-tight">Default text color fill</span>
+                  <span className="text-[10px] font-bold text-foreground leading-snug">Body Text Color</span>
+                  <span className="text-[8px] text-text-muted mt-[4px] leading-normal">Default text color fill</span>
                 </div>
                 <div className="flex items-center gap-xs">
                   <input
@@ -498,8 +498,8 @@ export default function PageSettingsTab({
                 ].map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between gap-sm">
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-foreground leading-none">{label}</span>
-                      <span className="text-[8px] text-text-muted mt-[2px] leading-tight">{desc}</span>
+                      <span className="text-[10px] font-bold text-foreground leading-snug">{label}</span>
+                      <span className="text-[8px] text-text-muted mt-[4px] leading-normal">{desc}</span>
                     </div>
                     <div className="flex items-center gap-xs">
                       <input
