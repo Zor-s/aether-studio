@@ -5,65 +5,15 @@ import { PageSettings } from "@/types/builder";
 import ColorPicker from "./color-picker";
 import CustomSelect from "./custom-select";
 import FontPicker from "./font-picker";
+import SeoSettingsSection from "./sections/seo-settings-section";
+import ThemePaletteSection from "./sections/theme-palette-section";
+import CustomScriptsSection from "./sections/custom-scripts-section";
 
 interface PageSettingsTabProps {
   pageSettings: PageSettings;
   onUpdatePageSettings: (updates: Partial<PageSettings>) => void;
   onShowToast?: (message: string, type: "success" | "warning" | "info") => void;
 }
-
-const THEME_PRESETS = {
-  aether: {
-    name: "Aether Cyan",
-    colors: {
-      iceBlue: "#d4f0fc",
-      skyBlue: "#89d6fb",
-      cyanActive: "#02a9f7",
-      deepTeal: "#02577a",
-      darkSlate: "#01303f",
-    },
-  },
-  emerald: {
-    name: "Emerald Forest",
-    colors: {
-      iceBlue: "#e6fcf5",
-      skyBlue: "#96f2d7",
-      cyanActive: "#0ca678",
-      deepTeal: "#097969",
-      darkSlate: "#0b2921",
-    },
-  },
-  sunset: {
-    name: "Sunset Coral",
-    colors: {
-      iceBlue: "#fff0e6",
-      skyBlue: "#ffd8a8",
-      cyanActive: "#ff922b",
-      deepTeal: "#d9480f",
-      darkSlate: "#1a0c00",
-    },
-  },
-  midnight: {
-    name: "Midnight Purple",
-    colors: {
-      iceBlue: "#f3f0ff",
-      skyBlue: "#d0bfff",
-      cyanActive: "#845ef7",
-      deepTeal: "#5f3dc4",
-      darkSlate: "#120b2e",
-    },
-  },
-  amber: {
-    name: "Warm Amber",
-    colors: {
-      iceBlue: "#fff9db",
-      skyBlue: "#ffe066",
-      cyanActive: "#f59f00",
-      deepTeal: "#d97706",
-      darkSlate: "#1c1917",
-    },
-  },
-};
 
 export default function PageSettingsTab({
   pageSettings,
@@ -87,85 +37,19 @@ export default function PageSettingsTab({
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-sm p-xs bg-panel">
       {/* SECTION 1: SEO & Metadata */}
-      <div className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${expandedSection === "seo" ? "overflow-visible" : "overflow-hidden"}`}>
-        <button
-          type="button"
-          onClick={() => toggleSection("seo")}
-          className="w-full flex items-center justify-between p-md text-xs font-bold text-foreground hover:bg-background/40 cursor-pointer transition-colors"
-        >
-          <div className="flex items-center gap-sm">
-            <span className="text-cyan-active">🌐</span>
-            <span>SEO & Metadata Settings</span>
-          </div>
-          <span className={`transition-transform duration-200 ${expandedSection === "seo" ? "rotate-90" : ""}`}>
-            ▶
-          </span>
-        </button>
-
-        {expandedSection === "seo" && (
-          <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
-            {/* SEO Title */}
-            <div className="flex flex-col gap-xs">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">SEO Title</label>
-              <input
-                type="text"
-                value={pageSettings.seoTitle || ""}
-                onChange={(e) => onUpdatePageSettings({ seoTitle: e.target.value })}
-                placeholder="e.g. Alex Mercer | Portfolio"
-                className="text-xs bg-background border border-panel-border rounded-lg px-sm py-[8px] text-foreground focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active/30 transition-all duration-200"
-              />
-            </div>
-
-            {/* SEO Description */}
-            <div className="flex flex-col gap-xs">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">SEO Description</label>
-                <span
-                  className={`text-[9px] font-mono ${(pageSettings.seoDescription || "").length > 160 ? "text-amber-500 font-bold" : "text-text-muted"}`}
-                >
-                  {(pageSettings.seoDescription || "").length}/160
-                </span>
-              </div>
-              <textarea
-                value={pageSettings.seoDescription || ""}
-                onChange={(e) => onUpdatePageSettings({ seoDescription: e.target.value })}
-                rows={3}
-                placeholder="Enter search engine meta description..."
-                className="text-xs bg-background border border-panel-border rounded-lg p-sm text-foreground focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active/30 transition-all duration-200 resize-none"
-              />
-            </div>
-
-            {/* Favicon URL */}
-            <div className="flex flex-col gap-xs">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Favicon URL</label>
-              <input
-                type="text"
-                value={pageSettings.faviconUrl || ""}
-                onChange={(e) => onUpdatePageSettings({ faviconUrl: e.target.value })}
-                placeholder="https://example.com/favicon.ico"
-                className="text-xs bg-background border border-panel-border rounded-lg px-sm py-[8px] text-foreground focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active/30 transition-all duration-200"
-              />
-              {pageSettings.faviconUrl && (
-                <div className="flex items-center gap-xs mt-xs p-xs border border-panel-border rounded-lg bg-background/30 max-w-max">
-                  <span className="text-[9px] text-text-muted font-medium">Preview:</span>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={pageSettings.faviconUrl}
-                    alt="Favicon preview"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = "none";
-                    }}
-                    className="w-4 h-4 object-contain rounded"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+      <SeoSettingsSection
+        pageSettings={pageSettings}
+        onUpdatePageSettings={onUpdatePageSettings}
+        isExpanded={expandedSection === "seo"}
+        onToggle={() => toggleSection("seo")}
+      />
 
       {/* SECTION 2: Page Canvas Layout */}
-      <div className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${expandedSection === "layout" ? "overflow-visible" : "overflow-hidden"}`}>
+      <div
+        className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${
+          expandedSection === "layout" ? "overflow-visible" : "overflow-hidden"
+        }`}
+      >
         <button
           type="button"
           onClick={() => toggleSection("layout")}
@@ -182,9 +66,10 @@ export default function PageSettingsTab({
 
         {expandedSection === "layout" && (
           <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
-            {/* Global Width Limit */}
             <div className="flex flex-col gap-xs">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Page Containment Width</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Page Containment Width
+              </label>
               <CustomSelect
                 value={pageSettings.widthMode || "boxed-md"}
                 onChange={(val) => onUpdatePageSettings({ widthMode: val as PageSettings["widthMode"] })}
@@ -197,9 +82,10 @@ export default function PageSettingsTab({
               />
             </div>
 
-            {/* Page Outer Padding */}
             <div className="flex flex-col gap-xs">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Page Outer Padding</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Page Outer Padding
+              </label>
               <CustomSelect
                 value={pageSettings.padding || "space-lg"}
                 onChange={(val) => onUpdatePageSettings({ padding: val })}
@@ -215,9 +101,10 @@ export default function PageSettingsTab({
               />
             </div>
 
-            {/* Root Elements Gap */}
             <div className="flex flex-col gap-xs">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Vertical Layout Gap</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Vertical Layout Gap
+              </label>
               <CustomSelect
                 value={pageSettings.gap || "space-lg"}
                 onChange={(val) => onUpdatePageSettings({ gap: val })}
@@ -237,7 +124,11 @@ export default function PageSettingsTab({
       </div>
 
       {/* SECTION 3: Page Background & Typography */}
-      <div className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${expandedSection === "typography" ? "overflow-visible" : "overflow-hidden"}`}>
+      <div
+        className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${
+          expandedSection === "typography" ? "overflow-visible" : "overflow-hidden"
+        }`}
+      >
         <button
           type="button"
           onClick={() => toggleSection("typography")}
@@ -254,9 +145,10 @@ export default function PageSettingsTab({
 
         {expandedSection === "typography" && (
           <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
-            {/* Global Page Font */}
             <div className="flex flex-col gap-xs">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Global Page Font</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Global Page Font
+              </label>
               <FontPicker
                 value={pageSettings.fontFamily || ""}
                 defaultLabel="Default System Font (Inter)"
@@ -265,9 +157,7 @@ export default function PageSettingsTab({
               />
             </div>
 
-            {/* Global Colors Box */}
             <div className="flex flex-col gap-sm bg-background/30 border border-panel-border/40 rounded-xl p-sm mt-xs">
-              {/* Page Background Selector */}
               <div className="flex items-center justify-between gap-sm">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-foreground leading-snug">Page Background</span>
@@ -288,7 +178,6 @@ export default function PageSettingsTab({
                 </div>
               </div>
 
-              {/* Page Base Text Selector */}
               <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-foreground leading-snug">Body Text Color</span>
@@ -314,156 +203,22 @@ export default function PageSettingsTab({
       </div>
 
       {/* SECTION 4: Brand Theme Presets & Palette */}
-      <div className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${expandedSection === "theme" ? "overflow-visible" : "overflow-hidden"}`}>
-        <button
-          type="button"
-          onClick={() => toggleSection("theme")}
-          className="w-full flex items-center justify-between p-md text-xs font-bold text-foreground hover:bg-background/40 cursor-pointer transition-colors"
-        >
-          <div className="flex items-center gap-sm">
-            <span className="text-cyan-active">🎨</span>
-            <span>Brand Palette & Presets</span>
-          </div>
-          <span className={`transition-transform duration-200 ${expandedSection === "theme" ? "rotate-90" : ""}`}>
-            ▶
-          </span>
-        </button>
-
-        {expandedSection === "theme" && (
-          <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
-            {/* Presets Grid */}
-            <div className="flex flex-col gap-xs">
-              <span className="text-[9px] text-text-muted font-bold uppercase tracking-wider">Apply Preset Theme</span>
-              <div className="grid grid-cols-2 gap-xs">
-                {Object.entries(THEME_PRESETS).map(([key, preset]) => {
-                  const isActive = Object.keys(preset.colors).every(
-                    (colorKey) =>
-                      preset.colors[colorKey as keyof typeof preset.colors].toLowerCase() ===
-                      themePalette[colorKey as keyof typeof themePalette]?.toLowerCase()
-                  );
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => {
-                        // Intelligent background color shift
-                        const isBgSlate = pageSettings.backgroundColor === themePalette.darkSlate || pageSettings.backgroundColor === "#01303f";
-                        
-                        onUpdatePageSettings({
-                          themePalette: { ...preset.colors },
-                          ...(isBgSlate ? { backgroundColor: preset.colors.darkSlate } : {}),
-                        });
-                        if (onShowToast) {
-                          onShowToast(`Applied ${preset.name} theme preset!`, "success");
-                        }
-                      }}
-                      className={`flex flex-col text-left p-xs border rounded-lg hover:border-cyan-active transition-all duration-200 cursor-pointer ${
-                        isActive
-                          ? "border-cyan-active bg-cyan-active/5 ring-1 ring-cyan-active/20"
-                          : "border-panel-border bg-background/20"
-                      }`}
-                    >
-                      <span className="text-[10px] font-bold text-foreground mb-[3px] truncate">
-                        {preset.name}
-                      </span>
-                      {/* Swatch strip */}
-                      <div className="flex h-2.5 rounded-sm overflow-hidden border border-panel-border/40">
-                        <div className="flex-1" style={{ backgroundColor: preset.colors.darkSlate }} />
-                        <div className="flex-1" style={{ backgroundColor: preset.colors.deepTeal }} />
-                        <div className="flex-1" style={{ backgroundColor: preset.colors.cyanActive }} />
-                        <div className="flex-1" style={{ backgroundColor: preset.colors.skyBlue }} />
-                        <div className="flex-1" style={{ backgroundColor: preset.colors.iceBlue }} />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Individual Customizers */}
-            <div className="flex flex-col gap-xs mt-xs">
-              <span className="text-[9px] text-text-muted font-bold uppercase tracking-wider">Customize Palette Swatches</span>
-              <div className="flex flex-col gap-sm bg-background/30 border border-panel-border/40 rounded-xl p-sm">
-                {[
-                  { key: "darkSlate", label: "Dark Slate Backdrop", desc: "Base dark paneling" },
-                  { key: "deepTeal", label: "Deep Teal Contrast", desc: "Muted text/subtitles" },
-                  { key: "cyanActive", label: "Cyan Active Accent", desc: "Active states/highlights" },
-                  { key: "skyBlue", label: "Sky Blue Accent", desc: "High-contrast borders" },
-                  { key: "iceBlue", label: "Ice Blue Base", desc: "Soft backgrounds & highlights" },
-                ].map(({ key, label, desc }) => (
-                  <div key={key} className="flex items-center justify-between gap-sm">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-foreground leading-snug">{label}</span>
-                      <span className="text-[8px] text-text-muted mt-[4px] leading-normal">{desc}</span>
-                    </div>
-                    <div className="flex items-center gap-xs">
-                      <input
-                        type="text"
-                        value={themePalette[key as keyof typeof themePalette]}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          onUpdatePageSettings({
-                            themePalette: {
-                              ...themePalette,
-                              [key]: val,
-                            },
-                          });
-                        }}
-                        className="w-14 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
-                      />
-                      <ColorPicker
-                        value={themePalette[key as keyof typeof themePalette] || "#ffffff"}
-                        onChange={(val) => {
-                          onUpdatePageSettings({
-                            themePalette: {
-                              ...themePalette,
-                              [key]: val,
-                            },
-                          });
-                        }}
-                        showThemePresets={false}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <ThemePaletteSection
+        pageSettings={pageSettings}
+        onUpdatePageSettings={onUpdatePageSettings}
+        onShowToast={onShowToast}
+        isExpanded={expandedSection === "theme"}
+        onToggle={() => toggleSection("theme")}
+        themePalette={themePalette}
+      />
 
       {/* SECTION 5: Custom Client Scripts */}
-      <div className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${expandedSection === "scripts" ? "overflow-visible" : "overflow-hidden"}`}>
-        <button
-          type="button"
-          onClick={() => toggleSection("scripts")}
-          className="w-full flex items-center justify-between p-md text-xs font-bold text-foreground hover:bg-background/40 cursor-pointer transition-colors"
-        >
-          <div className="flex items-center gap-sm">
-            <span className="text-cyan-active">⚡</span>
-            <span>Custom Scripts (JS)</span>
-          </div>
-          <span className={`transition-transform duration-200 ${expandedSection === "scripts" ? "rotate-90" : ""}`}>
-            ▶
-          </span>
-        </button>
-
-        {expandedSection === "scripts" && (
-          <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Custom Header JS</label>
-              <span className="text-[9px] text-amber-500 font-bold">Client Scripts</span>
-            </div>
-            <textarea
-              value={pageSettings.customJs || ""}
-              onChange={(e) => onUpdatePageSettings({ customJs: e.target.value })}
-              rows={4}
-              placeholder="// Insert custom scripting, analytics, or meta code here..."
-              className="text-xs font-mono bg-background border border-panel-border rounded-lg p-sm text-foreground focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active/30 transition-all duration-200 resize-none"
-            />
-          </div>
-        )}
-      </div>
+      <CustomScriptsSection
+        pageSettings={pageSettings}
+        onUpdatePageSettings={onUpdatePageSettings}
+        isExpanded={expandedSection === "scripts"}
+        onToggle={() => toggleSection("scripts")}
+      />
     </div>
   );
 }

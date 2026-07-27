@@ -1,0 +1,202 @@
+"use client";
+
+import React from "react";
+import { PageSettings } from "@/types/builder";
+import ColorPicker from "../color-picker";
+
+interface ThemePaletteSectionProps {
+  pageSettings: PageSettings;
+  onUpdatePageSettings: (updates: Partial<PageSettings>) => void;
+  onShowToast?: (message: string, type: "success" | "warning" | "info") => void;
+  isExpanded: boolean;
+  onToggle: () => void;
+  themePalette: NonNullable<PageSettings["themePalette"]>;
+}
+
+const THEME_PRESETS = {
+  aether: {
+    name: "Aether Cyan",
+    colors: {
+      iceBlue: "#d4f0fc",
+      skyBlue: "#89d6fb",
+      cyanActive: "#02a9f7",
+      deepTeal: "#02577a",
+      darkSlate: "#01303f",
+    },
+  },
+  emerald: {
+    name: "Emerald Forest",
+    colors: {
+      iceBlue: "#e6fcf5",
+      skyBlue: "#96f2d7",
+      cyanActive: "#0ca678",
+      deepTeal: "#097969",
+      darkSlate: "#0b2921",
+    },
+  },
+  sunset: {
+    name: "Sunset Coral",
+    colors: {
+      iceBlue: "#fff0e6",
+      skyBlue: "#ffd8a8",
+      cyanActive: "#ff922b",
+      deepTeal: "#d9480f",
+      darkSlate: "#1a0c00",
+    },
+  },
+  midnight: {
+    name: "Midnight Purple",
+    colors: {
+      iceBlue: "#f3f0ff",
+      skyBlue: "#d0bfff",
+      cyanActive: "#845ef7",
+      deepTeal: "#5f3dc4",
+      darkSlate: "#120b2e",
+    },
+  },
+  amber: {
+    name: "Warm Amber",
+    colors: {
+      iceBlue: "#fff9db",
+      skyBlue: "#ffe066",
+      cyanActive: "#f59f00",
+      deepTeal: "#d97706",
+      darkSlate: "#1c1917",
+    },
+  },
+};
+
+export default function ThemePaletteSection({
+  pageSettings,
+  onUpdatePageSettings,
+  onShowToast,
+  isExpanded,
+  onToggle,
+  themePalette,
+}: ThemePaletteSectionProps) {
+  return (
+    <div
+      className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${
+        isExpanded ? "overflow-visible" : "overflow-hidden"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-md text-xs font-bold text-foreground hover:bg-background/40 cursor-pointer transition-colors"
+      >
+        <div className="flex items-center gap-sm">
+          <span className="text-cyan-active">🎨</span>
+          <span>Brand Palette & Presets</span>
+        </div>
+        <span className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}>
+          ▶
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
+          <div className="flex flex-col gap-xs">
+            <span className="text-[9px] text-text-muted font-bold uppercase tracking-wider">
+              Apply Preset Theme
+            </span>
+            <div className="grid grid-cols-2 gap-xs">
+              {Object.entries(THEME_PRESETS).map(([key, preset]) => {
+                const isActive = Object.keys(preset.colors).every(
+                  (colorKey) =>
+                    preset.colors[colorKey as keyof typeof preset.colors].toLowerCase() ===
+                    themePalette[colorKey as keyof typeof themePalette]?.toLowerCase()
+                );
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      const isBgSlate =
+                        pageSettings.backgroundColor === themePalette.darkSlate ||
+                        pageSettings.backgroundColor === "#01303f";
+
+                      onUpdatePageSettings({
+                        themePalette: { ...preset.colors },
+                        ...(isBgSlate ? { backgroundColor: preset.colors.darkSlate } : {}),
+                      });
+                      if (onShowToast) {
+                        onShowToast(`Applied ${preset.name} theme preset!`, "success");
+                      }
+                    }}
+                    className={`flex flex-col text-left p-xs border rounded-lg hover:border-cyan-active transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? "border-cyan-active bg-cyan-active/5 ring-1 ring-cyan-active/20"
+                        : "border-panel-border bg-background/20"
+                    }`}
+                  >
+                    <span className="text-[10px] font-bold text-foreground mb-[3px] truncate">
+                      {preset.name}
+                    </span>
+                    <div className="flex h-2.5 rounded-sm overflow-hidden border border-panel-border/40">
+                      <div className="flex-1" style={{ backgroundColor: preset.colors.darkSlate }} />
+                      <div className="flex-1" style={{ backgroundColor: preset.colors.deepTeal }} />
+                      <div className="flex-1" style={{ backgroundColor: preset.colors.cyanActive }} />
+                      <div className="flex-1" style={{ backgroundColor: preset.colors.skyBlue }} />
+                      <div className="flex-1" style={{ backgroundColor: preset.colors.iceBlue }} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-xs mt-xs">
+            <span className="text-[9px] text-text-muted font-bold uppercase tracking-wider">
+              Customize Palette Swatches
+            </span>
+            <div className="flex flex-col gap-sm bg-background/30 border border-panel-border/40 rounded-xl p-sm">
+              {[
+                { key: "darkSlate", label: "Dark Slate Backdrop", desc: "Base dark paneling" },
+                { key: "deepTeal", label: "Deep Teal Contrast", desc: "Muted text/subtitles" },
+                { key: "cyanActive", label: "Cyan Active Accent", desc: "Active states/highlights" },
+                { key: "skyBlue", label: "Sky Blue Accent", desc: "High-contrast borders" },
+                { key: "iceBlue", label: "Ice Blue Base", desc: "Soft backgrounds & highlights" },
+              ].map(({ key, label, desc }) => (
+                <div key={key} className="flex items-center justify-between gap-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-foreground leading-snug">{label}</span>
+                    <span className="text-[8px] text-text-muted mt-[4px] leading-normal">{desc}</span>
+                  </div>
+                  <div className="flex items-center gap-xs">
+                    <input
+                      type="text"
+                      value={themePalette[key as keyof typeof themePalette]}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        onUpdatePageSettings({
+                          themePalette: {
+                            ...themePalette,
+                            [key]: val,
+                          },
+                        });
+                      }}
+                      className="w-14 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
+                    />
+                    <ColorPicker
+                      value={themePalette[key as keyof typeof themePalette] || "#ffffff"}
+                      onChange={(val) => {
+                        onUpdatePageSettings({
+                          themePalette: {
+                            ...themePalette,
+                            [key]: val,
+                          },
+                        });
+                      }}
+                      showThemePresets={false}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

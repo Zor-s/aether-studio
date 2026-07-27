@@ -21,19 +21,24 @@ This document details the architecture, file structure, code conventions, and ma
 │   │   ├── globals.css              # Main tailwind and layout global styles
 │   │   ├── layout.tsx               # Root app router layout structure
 │   │   └── page.tsx                 # Landing / Landing Redirection page
-│   ├── /components                  # Reusable React components
-│   │   ├── /builder                 # Drag & drop layout tree components
-│   │   │   └── /right-sidebar       # Decomposed style, content, page settings, and color-picker panels
-│   │   └── /registry                # Static component registry elements and graphic mockups
-│   ├── /hooks                       # Extracted modular canvas, sync, publish, and toast state custom hooks
-│   ├── /lib                         # Shared services & utility modules
-│   │   ├── /compiler                # HTML serialization engine, shared style utilities (style-utils.ts), and centralized scale maps (style-maps.ts)
-│   │   ├── /db                      # Relational Database connection wrapper (Turso/Neon)
-│   │   ├── /kv                      # Vercel KV cache & backup client
-│   │   ├── /r2                      # AWS SDK R2 Client bucket integration
-│   │   └── /telemetry               # Sentry exceptions and custom tracing helpers
-│   ├── /types                       # Unified builder typings contract definition file (builder.ts)
-│   └── proxy.ts                     # Next.js 16 pre-request interceptor boundary
+24: │   ├── /components                  # Reusable React components
+25: │   │   ├── /builder                 # Drag & drop layout tree components
+26: │   │   │   ├── /right-sidebar       # Decomposed style, content, page settings, sections, and color-picker panels
+27: │   │   │   │   └── /sections        # Sub-inspector sections (layout, typography, spacing, appearance, SEO, theme)
+28: │   │   │   ├── canvas-selection-overlay.tsx # Extracted selection & hover overlay toolbar
+29: │   │   │   ├── header-viewport-controls.tsx # Breakpoint device view switcher
+30: │   │   │   └── header-action-buttons.tsx    # Header undo/redo, preview, and publish buttons
+31: │   │   └── /registry                # Static component registry elements and graphic mockups
+32: │   ├── /hooks                       # Extracted modular canvas, sync, publish, and toast state custom hooks
+33: │   ├── /lib                         # Shared services & utility modules
+34: │   │   ├── /compiler                # HTML serialization engine, CSS media generator (css-generator.ts), shared style utilities (style-utils.ts), and centralized scale maps (style-maps.ts)
+35: │   │   ├── tree-utils.ts            # Pure Rose Tree traversal and mutation utilities
+36: │   │   ├── /db                      # Relational Database connection wrapper (Turso/Neon)
+37: │   │   ├── /kv                      # Vercel KV cache & backup client
+38: │   │   ├── /r2                      # AWS SDK R2 Client bucket integration
+39: │   │   └── /telemetry               # Sentry exceptions and custom tracing helpers
+40: │   ├── /types                       # Unified builder typings contract definition file (builder.ts)
+41: │   └── proxy.ts                     # Next.js 16 pre-request interceptor boundary
 ├── /workers                         # Cloudflare Edge Worker microservices
 │   ├── /subdomain-router            # Routing engine using Cache API (caches.default)
 │   └── /edge-forms                  # Edge data submissions processor (Turnstile/media disabled in basic-only mode)
