@@ -179,6 +179,17 @@ export function getElementPreviewMockup(id: string): React.ReactNode {
           </div>
         </div>
       );
+    case "blockquote":
+      return (
+        <div className="w-full h-24 bg-background rounded-md border border-panel-border/50 p-xs flex flex-col justify-center overflow-hidden relative">
+          <div className="border-l-[3px] border-cyan-active bg-cyan-active/5 rounded-r p-sm flex flex-col gap-[4px] relative">
+            <span className="absolute text-3xl font-serif text-cyan-active opacity-20 select-none pointer-events-none left-1 top-0">“</span>
+            <div className="w-full h-1.5 rounded bg-foreground/15 z-10" />
+            <div className="w-11/12 h-1.5 rounded bg-foreground/15 z-10" />
+            <div className="w-16 h-1 bg-cyan-active/50 rounded mt-[2px] z-10" />
+          </div>
+        </div>
+      );
     default:
       return null;
   }

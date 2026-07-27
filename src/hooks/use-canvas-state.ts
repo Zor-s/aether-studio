@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { CanvasElement } from "@/types/builder";
+import { CanvasElement, PageSettings } from "@/types/builder";
 
 const INITIAL_ELEMENTS: CanvasElement[] = [
   {
@@ -69,9 +69,7 @@ const INITIAL_ELEMENTS: CanvasElement[] = [
       margin: "space-xl",
       padding: "space-sm",
       borderRadius: "rounded-xl",
-      borderStyle: "solid",
-      borderWidth: "4",
-      borderColor: "#02a9f7",
+      quoteLineColor: "#02a9f7",
     },
   },
   {
@@ -89,8 +87,14 @@ const INITIAL_ELEMENTS: CanvasElement[] = [
   },
 ];
 
+// Detects the modifier key once at module load time (mac = Meta, others = Ctrl).
+const isMac =
+  typeof window !== "undefined" &&
+  navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
 export function useCanvasState(
-  showToast: (message: string, type?: "success" | "warning" | "info") => void
+  showToast: (message: string, type?: "success" | "warning" | "info") => void,
+  themePalette?: PageSettings["themePalette"]
 ) {
   const [activeDevice, setActiveDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [selectedElement, setSelectedElement] = useState<CanvasElement | null>(null);
@@ -113,43 +117,48 @@ export function useCanvasState(
     [history, historyIndex]
   );
 
+  /**
+   * Synchronizes the selected element with a new history snapshot.
+   * Used by handleUndo, handleRedo, and handleJumpToHistoryStep.
+   */
+  const syncSelectedElement = useCallback(
+    (snapshot: CanvasElement[]) => {
+      if (selectedElement) {
+        const synced = snapshot.find((el) => el.id === selectedElement.id);
+        setSelectedElement(synced || null);
+      }
+    },
+    [selectedElement]
+  );
+
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       const prevIndex = historyIndex - 1;
       setHistoryIndex(prevIndex);
       setCanvasElements(history[prevIndex]);
-      if (selectedElement) {
-        const synced = history[prevIndex].find((el) => el.id === selectedElement.id);
-        setSelectedElement(synced || null);
-      }
+      syncSelectedElement(history[prevIndex]);
     }
-  }, [historyIndex, history, selectedElement]);
+  }, [historyIndex, history, syncSelectedElement]);
 
   const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       const nextIndex = historyIndex + 1;
       setHistoryIndex(nextIndex);
       setCanvasElements(history[nextIndex]);
-      if (selectedElement) {
-        const synced = history[nextIndex].find((el) => el.id === selectedElement.id);
-        setSelectedElement(synced || null);
-      }
+      syncSelectedElement(history[nextIndex]);
     }
-  }, [historyIndex, history, selectedElement]);
+  }, [historyIndex, history, syncSelectedElement]);
 
   const handleJumpToHistoryStep = useCallback(
     (index: number) => {
       if (index >= 0 && index < history.length) {
         setHistoryIndex(index);
         setCanvasElements(history[index]);
-        if (selectedElement) {
-          const synced = history[index].find((el) => el.id === selectedElement.id);
-          setSelectedElement(synced || null);
-        }
+        syncSelectedElement(history[index]);
         showToast(`Jumped to history step #${index + 1}`, "info");
       }
     },
-    [history, selectedElement, showToast]
+    [history, syncSelectedElement, showToast]
   );
 
   // Keyboard Shortcuts Hook/Listener
@@ -173,9 +182,6 @@ export function useCanvasState(
         return;
       }
 
-      const isMac =
-        typeof window !== "undefined" &&
-        navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
       if (modifier && e.key.toLowerCase() === "z") {
@@ -196,7 +202,7 @@ export function useCanvasState(
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [historyIndex, history, selectedElement, handleUndo, handleRedo, showToast]);
+  }, [selectedElement, handleUndo, handleRedo, showToast]);
 
   const handleSelectElement = useCallback(
     (element: CanvasElement) => {
@@ -288,7 +294,7 @@ export function useCanvasState(
             type: "headline",
             category: "basic",
             content: "Click to Edit Heading",
-            styles: { fontSize: "text-xl", color: "#01303f", margin: "space-sm", align: "left" },
+            styles: { fontSize: "text-xl", color: themePalette?.darkSlate || "#01303f", margin: "space-sm", align: "left" },
           };
           break;
         case "paragraph":
@@ -298,7 +304,7 @@ export function useCanvasState(
             category: "basic",
             content:
               "This is a new text block component added from your builder elements selector. Adjust margins and sizes inside the styles panel.",
-            styles: { fontSize: "text-sm", color: "#02577a", margin: "space-sm", align: "left" },
+            styles: { fontSize: "text-sm", color: themePalette?.deepTeal || "#02577a", margin: "space-sm", align: "left" },
           };
           break;
         case "button":
@@ -310,7 +316,7 @@ export function useCanvasState(
             link: "#",
             styles: {
               fontSize: "text-xs",
-              color: "#02a9f7",
+              color: themePalette?.cyanActive || "#02a9f7",
               margin: "space-sm",
               align: "left",
               borderRadius: "rounded-md",
@@ -323,7 +329,7 @@ export function useCanvasState(
             type: "subheading",
             category: "basic",
             content: "Secondary Subheading Text",
-            styles: { fontSize: "text-lg", color: "#02577a", margin: "space-sm", align: "left" },
+            styles: { fontSize: "text-lg", color: themePalette?.deepTeal || "#02577a", margin: "space-sm", align: "left" },
           };
           break;
         case "blockquote":
@@ -335,12 +341,11 @@ export function useCanvasState(
               "This is a blockquote element representing a highlighted quote or testimonial.",
             styles: {
               fontSize: "text-md",
-              color: "#02577a",
+              color: themePalette?.deepTeal || "#02577a",
               margin: "space-md",
               padding: "space-sm",
-              borderStyle: "solid",
-              borderWidth: "4",
-              borderColor: "#02a9f7",
+              quoteLineColor: themePalette?.cyanActive || "#02a9f7",
+              quoteVariant: "classic",
             },
           };
           break;
@@ -351,7 +356,7 @@ export function useCanvasState(
             category: "basic",
             content:
               "List item bullet point one\nList item bullet point two\nList item bullet point three",
-            styles: { fontSize: "text-sm", color: "#02577a", margin: "space-sm" },
+            styles: { fontSize: "text-sm", color: themePalette?.deepTeal || "#02577a", margin: "space-sm" },
           };
           break;
         case "divider":
@@ -360,7 +365,7 @@ export function useCanvasState(
             type: "divider",
             category: "basic",
             content: "",
-            styles: { margin: "space-md", borderStyle: "solid", borderWidth: "1", borderColor: "#02a9f7" },
+            styles: { margin: "space-md", borderStyle: "solid", borderWidth: "1", borderColor: themePalette?.cyanActive || "#02a9f7" },
           };
           break;
         default:
@@ -371,7 +376,7 @@ export function useCanvasState(
       commitChanges(nextElements);
       setSelectedElement(newEl);
     },
-    [canvasElements, commitChanges]
+    [canvasElements, commitChanges, themePalette]
   );
 
   const handleDeleteElement = useCallback(
@@ -432,13 +437,13 @@ export function useCanvasState(
       const targetIdx = canvasElements.findIndex((el) => el.id === id);
       if (targetIdx === -1) return;
 
-      const idMap = new Map<string, string>();
+      const cloneIdMap = new Map<string, string>();
       const timestamp = Date.now();
       let cloneCounter = 0;
 
       const cloneElement = (el: CanvasElement, newParentId?: string): CanvasElement => {
         const newId = `el-${timestamp}-${cloneCounter++}`;
-        idMap.set(el.id, newId);
+        cloneIdMap.set(el.id, newId);
         return {
           ...el,
           id: newId,
@@ -455,15 +460,10 @@ export function useCanvasState(
       const elementsToClone = [original, ...getDescendants(id)];
       const clonedElements: CanvasElement[] = [];
 
-      // First pass: clone elements and populate idMap
+      // First pass: clone elements and populate cloneIdMap
       elementsToClone.forEach((el) => {
-        const parentId = el.parentId;
-        let newParentId = undefined;
-        if (el.id !== id && parentId) {
-          newParentId = idMap.get(parentId);
-        } else {
-          newParentId = parentId; // Keep the same parent for the root cloned element
-        }
+        const newParentId =
+          el.id !== id && el.parentId ? cloneIdMap.get(el.parentId) : el.parentId;
         clonedElements.push(cloneElement(el, newParentId));
       });
 

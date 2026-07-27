@@ -27,7 +27,7 @@ This document details the architecture, file structure, code conventions, and ma
 │   │   └── /registry                # Static component registry elements and graphic mockups
 │   ├── /hooks                       # Extracted modular canvas, sync, publish, and toast state custom hooks
 │   ├── /lib                         # Shared services & utility modules
-│   │   ├── /compiler                # HTML serialization engine and shared style utilities (style-utils.ts)
+│   │   ├── /compiler                # HTML serialization engine, shared style utilities (style-utils.ts), and centralized scale maps (style-maps.ts)
 │   │   ├── /db                      # Relational Database connection wrapper (Turso/Neon)
 │   │   ├── /kv                      # Vercel KV cache & backup client
 │   │   ├── /r2                      # AWS SDK R2 Client bucket integration
@@ -113,10 +113,21 @@ As the codebase approaches larger sizes, maintain strict separation of concerns:
 ### 1. Zero Dependency Coupling in Shared Libraries
 Ensure files inside [src/lib/](file:///home/zors/Git%20repositories/aether-studio/src/lib/) do not import React components or UI libraries. They should be clean, testable TypeScript utilities focusing on single responsibilities (e.g., [src/lib/compiler/](file:///home/zors/Git%20repositories/aether-studio/src/lib/compiler/index.ts) parses JSON to HTML, independent of DOM or React dependencies).
 
-### 2. Deterministic Design System Registry
+### 2. Centralized Style Scale Maps
+All spacing, font-size, border-radius, font-weight, letter-spacing, and layout scale maps live in **one place**: [`src/lib/compiler/style-maps.ts`](file:///home/zors/Git%20repositories/aether-studio/src/lib/compiler/style-maps.ts). Both the runtime compiler (`compiler.ts`) and the live canvas style utilities (`style-utils.ts`) import from this single source of truth. Never re-declare a `Record<string, string>` scale map inline in any other file — update `style-maps.ts` instead.
+
+### 3. Shared UI Sub-components via Colocation
+Reusable UI patterns that appear in more than one component **must** be extracted to a shared sub-component rather than copy-pasted:
+- **`<FontPicker>`** ([src/components/builder/right-sidebar/font-picker.tsx](file:///home/zors/Git%20repositories/aether-studio/src/components/builder/right-sidebar/font-picker.tsx)): Encapsulates the full Google Fonts search dropdown with smart directional positioning. Used by both `StyleInspectorTab` and `PageSettingsTab`.
+- **Modal components**: Page-level modals are colocated as presentational components in a `_components/` directory next to the page that owns their state (e.g., `PublishModal`, `ViewHtmlModal` in `app/dashboard/_components/`). The parent page retains all state and passes data + callbacks as props.
+
+### 4. Hook State Helpers
+Private helpers inside custom hooks should be extracted as inner functions to eliminate copy-paste. Example: `syncSelectedElement(snapshot)` in `useCanvasState` centralizes the 3-line selection-sync block shared by `handleUndo`, `handleRedo`, and `handleJumpToHistoryStep`.
+
+### 5. Deterministic Design System Registry
 Define all atomic layout widgets as static, immutable component schemas. Translation to inline HTML style attributes must be handled deterministically inside the Registry component layer, mapping to Tailwind utility properties present inside the centralized `aether-core.min.css`.
 
-### 3. Edge Worker Isolation
+### 6. Edge Worker Isolation
 Keep Cloudflare Worker microservices in the [workers/](file:///home/zors/Git%20repositories/aether-studio/workers/) folder fully isolated. Do not share imports between Next.js frontend code and Worker scripts, as the execution environments and bundler configurations differ.
 
 ---
@@ -134,6 +145,7 @@ To keep the codebase readable, performant, and maintainable as it grows, adhere 
 - **Server Components by Default**: All layout and page templates must be Server Components. Use Client Components (`"use client"`) only for visual builder canvas elements, custom inputs, modal interactions, or browser-only hooks (e.g. `useEffect`, `useState`).
 - **Colocate Assets**: Store page-specific sub-components, types, tests, and utility functions in the same directory as their main component (colocation) rather than using a global dump folder.
 - **Keep Components Focused**: Keep individual React components under 200 lines. Break large UI panels into sub-components, separating presentation layout from logical canvas state handlers.
+- **State and Ref Synchronization (React 19)**: Avoid calling state setters synchronously inside `useEffect` bodies, as this triggers cascading renders. Instead, adjust state during rendering or use event handlers. Do not read or write ref values (`ref.current`) during rendering; update refs in effects (`useEffect`) or in event handlers to keep render methods pure.
 
 ### C. Styling Rules
 - **No Ad-Hoc Tailwind Arbitrary Values**: Avoid values like `bg-[#f0f0f0]` or `w-[113px]`. Use standardized theme tokens (e.g. `bg-slate-900`, `w-28`) mapped to your design variables, ensuring visual design consistency.

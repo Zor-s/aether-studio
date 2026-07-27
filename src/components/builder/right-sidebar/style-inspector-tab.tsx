@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { CanvasElement, PageSettings, GOOGLE_FONTS_LIST } from "@/types/builder";
+import React from "react";
+import { CanvasElement, PageSettings } from "@/types/builder";
 import CustomSelect from "./custom-select";
 import ColorPicker from "./color-picker";
+import FontPicker from "./font-picker";
 
 interface StyleInspectorTabProps {
   activeDevice: "desktop" | "tablet" | "mobile";
@@ -20,27 +21,6 @@ export default function StyleInspectorTab({
   pageSettings,
   onShowToast,
 }: StyleInspectorTabProps) {
-  const [fontSearch, setFontSearch] = useState("");
-  const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
-  const [fontOpenUpward, setFontOpenUpward] = useState(false);
-  const fontContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (fontDropdownOpen && fontContainerRef.current) {
-      const rect = fontContainerRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-
-      // Font dropdown max height is max-h-56 (224px), let's threshold at 240px
-      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
-        setFontOpenUpward(true);
-      } else {
-        setFontOpenUpward(false);
-      }
-    }
-  }, [fontDropdownOpen]);
-
   const themePalette = pageSettings.themePalette || {
     iceBlue: "#d4f0fc",
     skyBlue: "#89d6fb",
@@ -50,20 +30,26 @@ export default function StyleInspectorTab({
   };
 
   const getStyleValue = (
-    key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
+    key: Exclude<
+      keyof NonNullable<CanvasElement["styles"]>,
+      "mobile" | "tablet"
+    >,
   ) => {
     const s = selectedElement.styles || {};
     if (activeDevice === "mobile") {
-      return s.mobile?.[key] !== undefined ? s.mobile[key] : (s[key] || "");
+      return s.mobile?.[key] !== undefined ? s.mobile[key] : s[key] || "";
     }
     if (activeDevice === "tablet") {
-      return s.tablet?.[key] !== undefined ? s.tablet[key] : (s[key] || "");
+      return s.tablet?.[key] !== undefined ? s.tablet[key] : s[key] || "";
     }
     return s[key] || "";
   };
 
   const isOverridden = (
-    key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
+    key: Exclude<
+      keyof NonNullable<CanvasElement["styles"]>,
+      "mobile" | "tablet"
+    >,
   ) => {
     const s = selectedElement.styles || {};
     if (activeDevice === "mobile") {
@@ -76,7 +62,10 @@ export default function StyleInspectorTab({
   };
 
   const handleClearOverride = (
-    key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
+    key: Exclude<
+      keyof NonNullable<CanvasElement["styles"]>,
+      "mobile" | "tablet"
+    >,
   ) => {
     const updatedStyles = { ...(selectedElement.styles || {}) };
 
@@ -104,13 +93,19 @@ export default function StyleInspectorTab({
       styles: updatedStyles,
     });
     if (onShowToast) {
-      onShowToast(`Reset ${activeDevice} override for style property: ${key}`, "info");
+      onShowToast(
+        `Reset ${activeDevice} override for style property: ${key}`,
+        "info",
+      );
     }
   };
 
   const handleStyleChange = (
-    key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">,
-    value: string
+    key: Exclude<
+      keyof NonNullable<CanvasElement["styles"]>,
+      "mobile" | "tablet"
+    >,
+    value: string,
   ) => {
     let updatedStyles = { ...(selectedElement.styles || {}) };
 
@@ -137,8 +132,11 @@ export default function StyleInspectorTab({
   };
 
   const renderLabel = (
-    key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">,
-    label: string
+    key: Exclude<
+      keyof NonNullable<CanvasElement["styles"]>,
+      "mobile" | "tablet"
+    >,
+    label: string,
   ) => {
     const overridden = isOverridden(key);
     return (
@@ -157,8 +155,18 @@ export default function StyleInspectorTab({
             className="text-[9px] text-cyan-active hover:text-red-500 cursor-pointer flex items-center gap-[2px] transition-colors focus:outline-none"
             title={`Clear ${activeDevice} override (reset to desktop)`}
           >
-            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-2.5 h-2.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Reset
           </button>
@@ -167,16 +175,17 @@ export default function StyleInspectorTab({
     );
   };
 
-  const filteredFonts = GOOGLE_FONTS_LIST.filter((font) =>
-    font.toLowerCase().includes(fontSearch.toLowerCase())
-  );
-
   return (
     <div className="flex flex-col gap-lg">
       {/* Breakpoint Override Active Warning Banner */}
       {activeDevice !== "desktop" && (
         <div className="p-xs px-sm rounded-lg bg-cyan-active/10 border border-cyan-active/20 text-[10px] text-cyan-active font-semibold flex items-center gap-xs mb-sm animate-fadeIn">
-          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-3.5 h-3.5 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -184,13 +193,16 @@ export default function StyleInspectorTab({
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             />
           </svg>
-          Editing {activeDevice} overrides. Styles apply strictly to {activeDevice}.
+          Editing {activeDevice} overrides. Styles apply strictly to{" "}
+          {activeDevice}.
         </div>
       )}
 
       {/* Spacing Spacing Controller */}
       <div className="flex flex-col gap-xs">
-        <span className="text-xs font-bold text-foreground">Concentric Spacing</span>
+        <span className="text-xs font-bold text-foreground">
+          Concentric Spacing
+        </span>
 
         {/* Outer Margin Box */}
         <div className="border border-panel-border rounded-xl bg-background/50 p-sm relative flex flex-col items-center">
@@ -251,7 +263,9 @@ export default function StyleInspectorTab({
       {/* Layout Settings Section (Only visible for section / container layout components) */}
       {["section", "container", "grid-2"].includes(selectedElement.type) && (
         <div className="flex flex-col gap-sm border-t border-panel-border/40 pt-sm">
-          <span className="text-xs font-bold text-foreground">Container Layout Settings</span>
+          <span className="text-xs font-bold text-foreground">
+            Container Layout Settings
+          </span>
 
           {/* Flex Direction & Gap */}
           <div className="grid grid-cols-2 gap-sm">
@@ -271,8 +285,15 @@ export default function StyleInspectorTab({
             )}
 
             {/* Flex Gap spacing */}
-            <div className={`flex flex-col gap-xs ${selectedElement.type === "grid-2" ? "col-span-2" : ""}`}>
-              {renderLabel("gap", selectedElement.type === "grid-2" ? "Grid Column Gap" : "Flex Item Gap")}
+            <div
+              className={`flex flex-col gap-xs ${selectedElement.type === "grid-2" ? "col-span-2" : ""}`}
+            >
+              {renderLabel(
+                "gap",
+                selectedElement.type === "grid-2"
+                  ? "Grid Column Gap"
+                  : "Flex Item Gap",
+              )}
               <CustomSelect
                 value={getStyleValue("gap") || "space-md"}
                 onChange={(val) => handleStyleChange("gap", val)}
@@ -362,102 +383,20 @@ export default function StyleInspectorTab({
       )}
 
       {/* Typography scale (Visible on relevant types) */}
-      {["headline", "paragraph", "button"].includes(selectedElement.type) && (
+      {["headline", "subheading", "paragraph", "button", "blockquote"].includes(
+        selectedElement.type,
+      ) && (
         <div className="flex flex-col gap-sm">
           <span className="text-xs font-bold text-foreground">Typography</span>
 
           <div className="grid grid-cols-2 gap-sm">
             {/* Font Family Picker */}
-            <div ref={fontContainerRef} className="col-span-2 flex flex-col gap-xs relative">
+            <div className="col-span-2">
               {renderLabel("fontFamily", "Font Family")}
-
-              {/* Trigger Button */}
-              <button
-                type="button"
-                onClick={() => setFontDropdownOpen(!fontDropdownOpen)}
-                className="w-full flex items-center justify-between text-xs bg-background border border-panel-border rounded-lg px-sm py-[8px] text-foreground focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active/30 cursor-pointer transition-all duration-200"
-              >
-                <span
-                  style={{ fontFamily: getStyleValue("fontFamily") || "inherit" }}
-                  className="truncate font-semibold text-foreground"
-                >
-                  {getStyleValue("fontFamily") || "Default System Font"}
-                </span>
-                <svg
-                  className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 shrink-0 ml-xs ${
-                    fontDropdownOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {/* Backdrop */}
-              {fontDropdownOpen && (
-                <div
-                  className="fixed inset-0 z-40 cursor-default"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFontDropdownOpen(false);
-                  }}
-                />
-              )}
-
-              {/* Dropdown Panel */}
-              {fontDropdownOpen && (
-                <div className={`absolute ${fontOpenUpward ? "bottom-[38px]" : "top-[64px]"} left-0 right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden animate-fadeIn max-h-56`}>
-                  {/* Search box inside panel */}
-                  <div className="p-xs bg-background/30 border-b border-panel-border shrink-0">
-                    <input
-                      type="text"
-                      placeholder="Search Google Fonts..."
-                      value={fontSearch}
-                      onChange={(e) => setFontSearch(e.target.value)}
-                      className="w-full h-8 px-sm rounded-md border border-panel-border bg-background text-[11px] text-foreground focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Fonts lists */}
-                  <div className="overflow-y-auto custom-scrollbar p-xs flex flex-col gap-[2px] bg-panel">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStyleChange("fontFamily", "");
-                        setFontDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-sm py-[6px] rounded-lg text-xs transition-colors cursor-pointer text-foreground hover:bg-accent-soft`}
-                    >
-                      Default System Font
-                    </button>
-                    {filteredFonts.map((fontName) => {
-                      const isActive = getStyleValue("fontFamily") === fontName;
-                      return (
-                        <button
-                          key={fontName}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStyleChange("fontFamily", fontName);
-                            setFontDropdownOpen(false);
-                          }}
-                          style={{ fontFamily: fontName }}
-                          className={`w-full text-left px-sm py-[6px] rounded-lg text-xs transition-colors cursor-pointer ${
-                            isActive
-                              ? "text-cyan-active bg-cyan-active/10 font-bold"
-                              : "text-foreground hover:bg-accent-soft hover:text-cyan-active"
-                          }`}
-                        >
-                          {fontName}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <FontPicker
+                value={getStyleValue("fontFamily") as string}
+                onChange={(val) => handleStyleChange("fontFamily", val)}
+              />
             </div>
 
             {/* Font Size Selector */}
@@ -533,19 +472,25 @@ export default function StyleInspectorTab({
 
       {/* Colors & Appearance Section */}
       <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm">
-        <span className="text-xs font-bold text-foreground">Colors & Appearance</span>
+        <span className="text-xs font-bold text-foreground">
+          Colors & Appearance
+        </span>
 
         <div className="flex flex-col gap-sm bg-background/20 border border-panel-border/40 rounded-xl p-sm">
           {/* Main Color Picker (Background for layouts/buttons, Text for others) */}
           <div className="flex items-center justify-between gap-sm">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-foreground leading-snug">
-                {["button", "section", "container", "grid-2"].includes(selectedElement.type)
+                {["button", "section", "container", "grid-2"].includes(
+                  selectedElement.type,
+                )
                   ? "Background Color"
                   : "Text Color"}
               </span>
               <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
-                {["button", "section", "container", "grid-2"].includes(selectedElement.type)
+                {["button", "section", "container", "grid-2"].includes(
+                  selectedElement.type,
+                )
                   ? "Adjust container fill"
                   : "Adjust typography fill"}
               </span>
@@ -553,7 +498,7 @@ export default function StyleInspectorTab({
             <div className="flex items-center gap-xs">
               {/* Preset variables helpers tag */}
               {["#d4f0fc", "#89d6fb", "#02a9f7", "#02577a", "#01303f"].includes(
-                getStyleValue("color").toLowerCase()
+                getStyleValue("color").toLowerCase(),
               ) && (
                 <span className="text-[8px] font-bold px-[4px] py-[2px] bg-cyan-active/10 text-cyan-active rounded uppercase">
                   Theme Preset
@@ -575,13 +520,94 @@ export default function StyleInspectorTab({
             </div>
           </div>
 
+          {/* Quote Accent Color (Only visible on blockquotes) */}
+          {selectedElement.type === "blockquote" && (
+            <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm animate-slideDown">
+              {/* Style Style Variant Selector Input */}
+              <div className="flex flex-col gap-xs">
+                {renderLabel("quoteVariant", "Quote Layout Style")}
+                <CustomSelect
+                  value={getStyleValue("quoteVariant") || "classic"}
+                  onChange={(val) => handleStyleChange("quoteVariant", val)}
+                  options={[
+                    { value: "classic", label: "Classic Left Line" },
+                    { value: "callout", label: "Modern Callout Card" },
+                    { value: "elegant", label: "Elegant Large Quotes" },
+                    { value: "banner", label: "Framed Top & Bottom Lines" },
+                  ]}
+                />
+              </div>
+
+              {/* Existing Quote Accent Color Picker Surface */}
+              <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-foreground leading-snug">
+                    Accent Line Color
+                  </span>
+                  <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
+                    Applies to highlight indicators or frames
+                  </span>
+                </div>
+                <div className="flex items-center gap-xs">
+                  <input
+                    type="text"
+                    value={
+                      getStyleValue("quoteLineColor") || themePalette.cyanActive
+                    }
+                    onChange={(e) =>
+                      handleStyleChange("quoteLineColor", e.target.value)
+                    }
+                    placeholder="e.g. #02a9f7"
+                    className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
+                  />
+                  <ColorPicker
+                    value={
+                      getStyleValue("quoteLineColor") || themePalette.cyanActive
+                    }
+                    onChange={(val) => handleStyleChange("quoteLineColor", val)}
+                    themePalette={themePalette}
+                  />
+                </div>
+              </div>
+
+              {/* Custom Background Color Picker */}
+              <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-foreground leading-snug">
+                    Background Color
+                  </span>
+                  <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
+                    Adjust blockquote backdrop fill
+                  </span>
+                </div>
+                <div className="flex items-center gap-xs">
+                  <input
+                    type="text"
+                    value={getStyleValue("backgroundColor")}
+                    onChange={(e) =>
+                      handleStyleChange("backgroundColor", e.target.value)
+                    }
+                    placeholder="e.g. #02a9f7"
+                    className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
+                  />
+                  <ColorPicker
+                    value={getStyleValue("backgroundColor")}
+                    onChange={(val) => handleStyleChange("backgroundColor", val)}
+                    themePalette={themePalette}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           {/* Border Radius (Visible on relevant shapes) */}
           {["button", "section", "container", "grid-2", "blockquote"].includes(
-            selectedElement.type
+            selectedElement.type,
           ) && (
             <div className="flex items-center justify-between gap-sm border-t border-panel-border/30 pt-sm">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-foreground leading-snug">Border Radius</span>
+                <span className="text-[10px] font-bold text-foreground leading-snug">
+                  Border Radius
+                </span>
                 <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
                   Smooth component corners
                 </span>
@@ -608,7 +634,9 @@ export default function StyleInspectorTab({
           {/* Border Style Toggle */}
           <div className="flex items-center justify-between gap-sm border-t border-panel-border/30 pt-sm">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-foreground leading-snug">Border Style</span>
+              <span className="text-[10px] font-bold text-foreground leading-snug">
+                Border Style
+              </span>
               <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
                 Add container outlines
               </span>
@@ -629,51 +657,56 @@ export default function StyleInspectorTab({
           </div>
 
           {/* Border Width & Color Picker (Only visible if Border Style is active) */}
-          {getStyleValue("borderStyle") && getStyleValue("borderStyle") !== "none" && (
-            <div className="flex flex-col gap-sm border-t border-panel-border/20 pt-sm animate-slideDown">
-              {/* Border Width slider */}
-              <div className="flex items-center justify-between gap-sm">
-                <span className="text-[9px] font-semibold text-text-muted uppercase tracking-wider">
-                  Border Width
-                </span>
-                <div className="flex items-center gap-sm shrink-0">
-                  <input
-                    type="range"
-                    min="1"
-                    max="8"
-                    step="1"
-                    value={getStyleValue("borderWidth") || "1"}
-                    onChange={(e) => handleStyleChange("borderWidth", e.target.value)}
-                    className="w-20 accent-cyan-active cursor-pointer"
-                  />
-                  <span className="text-[10px] font-mono font-bold text-foreground w-6 text-right">
-                    {getStyleValue("borderWidth") || "1"}px
+          {getStyleValue("borderStyle") &&
+            getStyleValue("borderStyle") !== "none" && (
+              <div className="flex flex-col gap-sm border-t border-panel-border/20 pt-sm animate-slideDown">
+                {/* Border Width slider */}
+                <div className="flex items-center justify-between gap-sm">
+                  <span className="text-[9px] font-semibold text-text-muted uppercase tracking-wider">
+                    Border Width
                   </span>
+                  <div className="flex items-center gap-sm shrink-0">
+                    <input
+                      type="range"
+                      min="1"
+                      max="8"
+                      step="1"
+                      value={getStyleValue("borderWidth") || "1"}
+                      onChange={(e) =>
+                        handleStyleChange("borderWidth", e.target.value)
+                      }
+                      className="w-20 accent-cyan-active cursor-pointer"
+                    />
+                    <span className="text-[10px] font-mono font-bold text-foreground w-6 text-right">
+                      {getStyleValue("borderWidth") || "1"}px
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Border Color */}
-              <div className="flex items-center justify-between gap-sm">
-                <span className="text-[9px] font-semibold text-text-muted uppercase tracking-wider">
-                  Border Color
-                </span>
-                <div className="flex items-center gap-xs">
-                  <input
-                    type="text"
-                    value={getStyleValue("borderColor")}
-                    onChange={(e) => handleStyleChange("borderColor", e.target.value)}
-                    placeholder="e.g. #02a9f7"
-                    className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
-                  />
-                  <ColorPicker
-                    value={getStyleValue("borderColor")}
-                    onChange={(val) => handleStyleChange("borderColor", val)}
-                    themePalette={themePalette}
-                  />
+                {/* Border Color */}
+                <div className="flex items-center justify-between gap-sm">
+                  <span className="text-[9px] font-semibold text-text-muted uppercase tracking-wider">
+                    Border Color
+                  </span>
+                  <div className="flex items-center gap-xs">
+                    <input
+                      type="text"
+                      value={getStyleValue("borderColor")}
+                      onChange={(e) =>
+                        handleStyleChange("borderColor", e.target.value)
+                      }
+                      placeholder="e.g. #02a9f7"
+                      className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
+                    />
+                    <ColorPicker
+                      value={getStyleValue("borderColor")}
+                      onChange={(val) => handleStyleChange("borderColor", val)}
+                      themePalette={themePalette}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

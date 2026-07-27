@@ -324,7 +324,9 @@ export default function ColorPicker({
 
   // Ref to always reference the latest localHsva without React closure captures
   const localHsvaRef = useRef<HSVA>(localHsva);
-  localHsvaRef.current = localHsva;
+  useEffect(() => {
+    localHsvaRef.current = localHsva;
+  }, [localHsva]);
 
   // Refs for tracking active dragging state and values
   const isDraggingRef = useRef(false);
@@ -334,22 +336,13 @@ export default function ColorPicker({
   const lastTimeRef = useRef<number>(0);
 
   // Sync state from props when value or theme changes externally
-  const [prevValue, setPrevValue] = useState(value);
-  const [prevThemePalette, setPrevThemePalette] = useState(themePalette);
-  if (value !== prevValue || themePalette !== prevThemePalette) {
-    setPrevValue(value);
-    setPrevThemePalette(themePalette);
+  useEffect(() => {
     if (!isDraggingRef.current) {
       const nextHsva = getHsvaFromValue(value);
       setLocalHsva(nextHsva);
       latestFormattedColorRef.current = formatColor(nextHsva, format);
     }
-  }
-
-  // Update latestFormattedColorRef when localHsva or format changes
-  useEffect(() => {
-    latestFormattedColorRef.current = formatColor(localHsva, format);
-  }, [localHsva, format]);
+  }, [value, themePalette, format, getHsvaFromValue]);
 
   // Clean up throttled timeouts on unmount
   useEffect(() => {

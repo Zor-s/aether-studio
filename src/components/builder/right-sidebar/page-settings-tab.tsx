@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { PageSettings, GOOGLE_FONTS_LIST } from "@/types/builder";
+import React, { useState } from "react";
+import { PageSettings } from "@/types/builder";
 import ColorPicker from "./color-picker";
 import CustomSelect from "./custom-select";
+import FontPicker from "./font-picker";
 
 interface PageSettingsTabProps {
   pageSettings: PageSettings;
@@ -70,10 +71,6 @@ export default function PageSettingsTab({
   onShowToast,
 }: PageSettingsTabProps) {
   const [expandedSection, setExpandedSection] = useState<string>("seo");
-  const [fontSearch, setFontSearch] = useState("");
-  const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
-  const [fontOpenUpward, setFontOpenUpward] = useState(false);
-  const fontContainerRef = useRef<HTMLDivElement>(null);
 
   const themePalette = pageSettings.themePalette || {
     iceBlue: "#d4f0fc",
@@ -83,29 +80,9 @@ export default function PageSettingsTab({
     darkSlate: "#01303f",
   };
 
-  useEffect(() => {
-    if (fontDropdownOpen && fontContainerRef.current) {
-      const rect = fontContainerRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-
-      // Font dropdown max height is max-h-56 (224px), let's threshold at 240px
-      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
-        setFontOpenUpward(true);
-      } else {
-        setFontOpenUpward(false);
-      }
-    }
-  }, [fontDropdownOpen]);
-
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
-
-  const filteredFonts = GOOGLE_FONTS_LIST.filter((font) =>
-    font.toLowerCase().includes(fontSearch.toLowerCase())
-  );
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-sm p-xs bg-panel">
@@ -278,96 +255,14 @@ export default function PageSettingsTab({
         {expandedSection === "typography" && (
           <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
             {/* Global Page Font */}
-            <div ref={fontContainerRef} className="flex flex-col gap-xs relative">
+            <div className="flex flex-col gap-xs">
               <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Global Page Font</label>
-
-              {/* Trigger Button */}
-              <button
-                type="button"
-                onClick={() => setFontDropdownOpen(!fontDropdownOpen)}
-                className="w-full flex items-center justify-between text-xs bg-background border border-panel-border rounded-lg px-sm py-[8px] text-foreground focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active/30 cursor-pointer transition-all duration-200"
-              >
-                <span
-                  style={{ fontFamily: pageSettings.fontFamily || "inherit" }}
-                  className="truncate font-semibold text-foreground"
-                >
-                  {pageSettings.fontFamily || "Default System Font"}
-                </span>
-                <svg
-                  className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 shrink-0 ml-xs ${
-                    fontDropdownOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {/* Backdrop */}
-              {fontDropdownOpen && (
-                <div
-                  className="fixed inset-0 z-40 cursor-default"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFontDropdownOpen(false);
-                  }}
-                />
-              )}
-
-              {/* Dropdown Panel */}
-              {fontDropdownOpen && (
-                <div className={`absolute ${fontOpenUpward ? "bottom-[38px]" : "top-[38px]"} left-0 right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden animate-fadeIn max-h-56`}>
-                  {/* Search box inside panel */}
-                  <div className="p-xs bg-background/30 border-b border-panel-border shrink-0">
-                    <input
-                      type="text"
-                      placeholder="Search Google Fonts..."
-                      value={fontSearch}
-                      onChange={(e) => setFontSearch(e.target.value)}
-                      className="w-full h-8 px-sm rounded-md border border-panel-border bg-background text-[11px] text-foreground focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Fonts lists */}
-                  <div className="overflow-y-auto custom-scrollbar p-xs flex flex-col gap-[2px] bg-panel">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onUpdatePageSettings({ fontFamily: "Inter" });
-                        setFontDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-sm py-[6px] rounded-lg text-xs transition-colors cursor-pointer text-foreground hover:bg-accent-soft"
-                    >
-                      Default System Font (Inter)
-                    </button>
-                    {filteredFonts.map((fontName) => {
-                      const isActive = pageSettings.fontFamily === fontName;
-                      return (
-                        <button
-                          key={fontName}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdatePageSettings({ fontFamily: fontName });
-                            setFontDropdownOpen(false);
-                          }}
-                          style={{ fontFamily: fontName }}
-                          className={`w-full text-left px-sm py-[6px] rounded-lg text-xs transition-colors cursor-pointer ${
-                            isActive
-                              ? "text-cyan-active bg-cyan-active/10 font-bold"
-                              : "text-foreground hover:bg-accent-soft hover:text-cyan-active"
-                          }`}
-                        >
-                          {fontName}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <FontPicker
+                value={pageSettings.fontFamily || ""}
+                defaultLabel="Default System Font (Inter)"
+                defaultValue="Inter"
+                onChange={(val) => onUpdatePageSettings({ fontFamily: val })}
+              />
             </div>
 
             {/* Global Colors Box */}

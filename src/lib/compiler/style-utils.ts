@@ -1,17 +1,18 @@
 import React from "react";
 import { CanvasElement, PageSettings } from "@/types/builder";
+import {
+  MIN_HEIGHT_MAP,
+  LIGHT_BG_VALUES,
+  LAYOUT_ELEMENT_TYPES,
+} from "./style-maps";
 
 export const getResolvedStyles = (
   el: CanvasElement,
   activeDevice: "desktop" | "tablet" | "mobile"
 ) => {
   const base = el.styles;
-  if (activeDevice === "mobile") {
-    return { ...base, ...base.mobile };
-  }
-  if (activeDevice === "tablet") {
-    return { ...base, ...base.tablet };
-  }
+  if (activeDevice === "mobile") return { ...base, ...base.mobile };
+  if (activeDevice === "tablet") return { ...base, ...base.tablet };
   return base;
 };
 
@@ -23,10 +24,10 @@ export const mapColor = (
   const val = colorVal.toLowerCase().trim();
 
   if (palette) {
-    if (palette.iceBlue && val === palette.iceBlue.toLowerCase().trim()) return "var(--brand-ice-blue)";
-    if (palette.skyBlue && val === palette.skyBlue.toLowerCase().trim()) return "var(--brand-sky-blue)";
+    if (palette.iceBlue   && val === palette.iceBlue.toLowerCase().trim())   return "var(--brand-ice-blue)";
+    if (palette.skyBlue   && val === palette.skyBlue.toLowerCase().trim())   return "var(--brand-sky-blue)";
     if (palette.cyanActive && val === palette.cyanActive.toLowerCase().trim()) return "var(--brand-cyan-active)";
-    if (palette.deepTeal && val === palette.deepTeal.toLowerCase().trim()) return "var(--brand-deep-teal)";
+    if (palette.deepTeal  && val === palette.deepTeal.toLowerCase().trim())  return "var(--brand-deep-teal)";
     if (palette.darkSlate && val === palette.darkSlate.toLowerCase().trim()) return "var(--brand-dark-slate)";
   }
 
@@ -40,81 +41,76 @@ export const mapColor = (
   return colorVal;
 };
 
+/** CSS class name suffix for each space-* token */
+const SPACE_CLASS_SUFFIX: Record<string, string> = {
+  "space-none": "none",
+  "space-xs":   "xs",
+  "space-sm":   "sm",
+  "space-md":   "md",
+  "space-lg":   "lg",
+  "space-xl":   "xl",
+  "space-2xl":  "2xl",
+};
+
 export const getStyleClasses = (
   el: CanvasElement,
   activeDevice: "desktop" | "tablet" | "mobile"
 ): string => {
   const s = getResolvedStyles(el, activeDevice);
   const classes: string[] = [];
+  const isLayoutComponent = LAYOUT_ELEMENT_TYPES.has(el.type);
 
-  const isLayoutComponent = ["section", "container", "grid-2"].includes(el.type);
-  const marginPrefix = isLayoutComponent ? "my-" : "m-";
-  if (s.margin === "space-none") classes.push(`${marginPrefix}none`);
-  else if (s.margin === "space-xs") classes.push(`${marginPrefix}xs`);
-  else if (s.margin === "space-sm") classes.push(`${marginPrefix}sm`);
-  else if (s.margin === "space-md") classes.push(`${marginPrefix}md`);
-  else if (s.margin === "space-lg") classes.push(`${marginPrefix}lg`);
-  else if (s.margin === "space-xl") classes.push(`${marginPrefix}xl`);
-  else if (s.margin === "space-2xl") classes.push(`${marginPrefix}2xl`);
+  // Margin
+  if (s.margin && SPACE_CLASS_SUFFIX[s.margin]) {
+    const prefix = isLayoutComponent ? "my-" : "m-";
+    classes.push(`${prefix}${SPACE_CLASS_SUFFIX[s.margin]}`);
+  }
 
-  if (s.padding === "space-none") classes.push("p-none");
-  else if (s.padding === "space-xs") classes.push("p-xs");
-  else if (s.padding === "space-sm") classes.push("p-sm");
-  else if (s.padding === "space-md") classes.push("p-md");
-  else if (s.padding === "space-lg") classes.push("p-lg");
-  else if (s.padding === "space-xl") classes.push("p-xl");
-  else if (s.padding === "space-2xl") classes.push("p-2xl");
+  // Padding
+  if (s.padding && SPACE_CLASS_SUFFIX[s.padding]) {
+    classes.push(`p-${SPACE_CLASS_SUFFIX[s.padding]}`);
+  }
 
-  if (s.fontSize) classes.push(s.fontSize);
-
-  if (s.align === "left") classes.push("text-left");
+  if (s.fontSize)      classes.push(s.fontSize);
+  if (s.align === "left")   classes.push("text-left");
   else if (s.align === "center") classes.push("text-center");
-  else if (s.align === "right") classes.push("text-right");
+  else if (s.align === "right")  classes.push("text-right");
 
-  if (s.borderRadius) classes.push(s.borderRadius);
-  if (s.fontWeight) classes.push(s.fontWeight);
+  if (s.borderRadius)  classes.push(s.borderRadius);
+  if (s.fontWeight)    classes.push(s.fontWeight);
   if (s.letterSpacing) classes.push(s.letterSpacing);
 
-  if (["section", "container", "grid-2"].includes(el.type)) {
+  if (isLayoutComponent) {
     if (el.type === "grid-2") {
-      if (activeDevice === "mobile") {
-        classes.push("grid grid-cols-1");
-      } else {
-        classes.push("grid grid-cols-1 md:grid-cols-2");
-      }
+      classes.push(activeDevice === "mobile" ? "grid grid-cols-1" : "grid grid-cols-1 md:grid-cols-2");
     } else {
       classes.push("flex");
+      classes.push(s.direction === "row" ? "flex-row" : "flex-col");
 
-      if (s.direction === "row") {
-        classes.push("flex-row");
-      } else {
-        classes.push("flex-col");
-      }
-
-      if (s.justify === "start") classes.push("justify-start");
-      else if (s.justify === "end") classes.push("justify-end");
+      if (s.justify === "start")        classes.push("justify-start");
+      else if (s.justify === "end")     classes.push("justify-end");
       else if (s.justify === "between") classes.push("justify-between");
-      else classes.push("justify-center");
+      else                              classes.push("justify-center");
 
-      if (s.alignItems === "start") classes.push("items-start");
-      else if (s.alignItems === "end") classes.push("items-end");
+      if (s.alignItems === "start")   classes.push("items-start");
+      else if (s.alignItems === "end")     classes.push("items-end");
       else if (s.alignItems === "stretch") classes.push("items-stretch");
-      else classes.push("items-center");
+      else                                 classes.push("items-center");
     }
 
-    if (s.gap === "space-none") classes.push("gap-0");
-    else if (s.gap === "space-xs") classes.push("gap-xs");
-    else if (s.gap === "space-sm") classes.push("gap-sm");
-    else if (s.gap === "space-lg") classes.push("gap-lg");
-    else if (s.gap === "space-xl") classes.push("gap-xl");
-    else if (s.gap === "space-2xl") classes.push("gap-2xl");
-    else classes.push("gap-md");
+    // Gap
+    if (s.gap && SPACE_CLASS_SUFFIX[s.gap]) {
+      classes.push(s.gap === "space-none" ? "gap-0" : `gap-${SPACE_CLASS_SUFFIX[s.gap]}`);
+    } else {
+      classes.push("gap-md");
+    }
 
-    if (s.widthMode === "boxed-sm") classes.push("max-w-[384px] mx-auto w-full");
+    // Width mode
+    if (s.widthMode === "boxed-sm")     classes.push("max-w-[384px] mx-auto w-full");
     else if (s.widthMode === "boxed-md") classes.push("max-w-[448px] mx-auto w-full");
     else if (s.widthMode === "boxed-lg") classes.push("max-w-[512px] mx-auto w-full");
     else if (s.widthMode === "boxed-xl") classes.push("max-w-[576px] mx-auto w-full");
-    else classes.push("w-full");
+    else                                 classes.push("w-full");
 
     if (s.minHeight === "screen") classes.push("min-h-screen");
     else if (s.minHeight === "auto") classes.push("min-h-auto");
@@ -133,34 +129,29 @@ export const getStyleProps = (
 
   if (s.color) {
     const mappedColor = mapColor(s.color, palette);
-    if (["button", "section", "container", "grid-2"].includes(el.type)) {
+    if (LAYOUT_ELEMENT_TYPES.has(el.type)) {
       props.backgroundColor = mappedColor;
-      const val = s.color.toLowerCase().trim();
-      const isLightBg = ["#d4f0fc", "#89d6fb", "var(--brand-ice-blue)", "var(--brand-sky-blue)"].includes(val);
+      const isLightBg = LIGHT_BG_VALUES.has(s.color.toLowerCase().trim());
       props.color = isLightBg ? "var(--brand-dark-slate)" : "#ffffff";
     } else {
       props.color = mappedColor;
     }
   }
 
+  if (s.backgroundColor) {
+    props.backgroundColor = mapColor(s.backgroundColor, palette);
+  }
+
   if (s.borderStyle && s.borderStyle !== "none") {
     props.borderStyle = s.borderStyle as React.CSSProperties["borderStyle"];
     props.borderWidth = `${s.borderWidth || 0}px`;
-    if (s.borderColor) {
-      props.borderColor = mapColor(s.borderColor, palette);
-    } else {
-      props.borderColor = "var(--panel-border)";
-    }
+    props.borderColor = s.borderColor ? mapColor(s.borderColor, palette) : "var(--panel-border)";
   }
 
-  if (s.fontFamily) {
-    props.fontFamily = s.fontFamily;
-  }
+  if (s.fontFamily) props.fontFamily = s.fontFamily;
 
-  if (s.minHeight) {
-    if (s.minHeight === "h-300") props.minHeight = "300px";
-    else if (s.minHeight === "h-500") props.minHeight = "500px";
-    else if (s.minHeight === "h-700") props.minHeight = "700px";
+  if (s.minHeight && MIN_HEIGHT_MAP[s.minHeight] && ["h-300", "h-500", "h-700"].includes(s.minHeight)) {
+    props.minHeight = MIN_HEIGHT_MAP[s.minHeight];
   }
 
   return props;

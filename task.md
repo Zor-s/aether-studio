@@ -31,15 +31,3 @@ When updating this document:
 
 ---
 
-## Page Settings Sidebar Re-engineering
-
-- [x] Re-engineer Page Settings Sidebar & Synchronization
-    - [x] Update type contracts (`src/types/builder.ts`) with new PageSettings fields and shared font list.
-    - [x] Update dashboard state (`src/app/dashboard/page.tsx`) with default values.
-    - [x] Implement robust loading/merging logic in synchronization hook (`src/hooks/use-sync-state.ts`).
-    - [x] Update compilation logic (`src/lib/compiler/compiler.ts`) to use dynamic page settings.
-    - [x] Update canvas layout (`src/components/builder/workspace-canvas.tsx`) to match page settings in edit mode.
-    - [x] Re-design right sidebar Page Settings tab (`src/components/builder/right-sidebar/page-settings-tab.tsx`) with premium UI sections.
-    - [x] Update style inspector tab (`src/components/builder/right-sidebar/style-inspector-tab.tsx`) to use shared font list.
-    - [x] Verify functionality, check builds, and test page compilation output.
-

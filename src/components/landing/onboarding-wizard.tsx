@@ -53,6 +53,7 @@ const STEPS = [
 export default function OnboardingWizard({ isOpen, onClose }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
+  // Reset to the first step each time the modal is opened during render
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);

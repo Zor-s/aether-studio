@@ -354,5 +354,25 @@ To guarantee builder stability and compiled page security under nested layout op
 - **Capture-Phase Window Listeners**: Window-level event bindings (such as `scroll`) must utilize capture propagation (`{ capture: true }`) to correctly intercept scrolling events from nested containers like sidebars, allowing accurate re-alignments of absolute-positioned Portal components.
 - **Draggable Handle Transitions**: Draggable elements (like the saturation-value pointer and slider handles) must not use CSS transitions (`transition-all`) while active to prevent cursor lag.
 
+### F. Conditional Typography Defaults & Styling Overrides
+- **Typography Controls Availability**: The Style Inspector Typography panel (containing Font Family, Font Size, Text Align, Font Weight, and Letter Spacing) is enabled for Large Headline (`headline`), Secondary Subheading (`subheading`), Paragraph Block (`paragraph`), Action Button (`button`), and Blockquote Testimonial (`blockquote`) components to ensure design system consistency.
+- **Default Styling Omission**: To ensure that user-defined custom typography styles (such as `fontWeight` or `letterSpacing` overrides) apply successfully, default styling classes must be conditionally omitted.
+- **Headline Component (`h2`)**: If a custom font weight or letter spacing is configured, omit the default `font-extrabold` or `tracking-tight` class from the `h2` tag.
+- **Subheading Component (`h3`)**: If a custom font weight or letter spacing is configured, omit the default `font-semibold` or `tracking-tight` class from the `h3` tag.
+- **Paragraph Component (`p`)**: If a custom font weight is configured, omit the default `font-medium` class from the `p` tag.
+- **Blockquote Component (`blockquote`)**: If a custom font weight is configured, omit the default `font-medium` class from the `blockquote` tag.
+- **Blockquote Bounding Box Borders**: The standard border options (`borderStyle`, `borderWidth`, and `borderColor`) apply to the component's bounding box wrapper, allowing the creation of card border outlines around the testimonial block.
+- **Quote Accent Highlight Line**: A dedicated setting (`quoteLineColor`) controls the color of the vertical left highlight accent line (labeled as "Accent Line Color"). To prevent the highlight line from overlapping with the component's rounded borders or outer edges, it is rendered as an absolute-positioned vertical bar (`span`) inset dynamically by the active padding value, ensuring a clean, bounded presentation inside the blockquote card.
+- **Blockquote Custom Background Color**: A custom background color (`backgroundColor`) option is available for the blockquote component. When configured, it overrides the default variant-specific background colors.
+- **Theme-Aware Default Colors**: When creating new elements (Blockquote, Button, Divider, Headline, Paragraph, Subheading, List), defaults for `color`, `borderColor`, and `quoteLineColor` are initialized dynamically using the active theme's palette variables (e.g. `cyanActive`, `deepTeal`, `darkSlate`) rather than static default hex strings.
+- **Blockquote Layout Variants (`quoteVariant`)**: Supports four unique presentation layouts translated directly by the compiler into semantic HTML configurations with integrated theme-palette variables:
+  - **Classic**: Features a thick left line accent inset by padding, paired with a soft background backing (`bg-accent-soft/10` when no custom background color is set) and right-rounded corners (`rounded-r-xl`).
+  - **Callout**: Renders a centered, fully rounded card (`rounded-2xl`) with glassmorphic backing (`bg-accent-soft/15` when no custom background color is set, plus shadow-sm and border border-panel-border/30) and a large decorative top-left quotation watermark mark.
+  - **Elegant**: A borderless minimalist layout showcasing balanced top and bottom hanging quotation marks (`text-5xl text-cyan-active/60 font-serif`).
+  - **Banner**: A horizontal band layout framed with top and bottom borders (2px solid) using the custom `quoteLineColor`, set on a soft colored background (`bg-accent-soft/5` when no custom background color is set).
+- **Canvas-Compiler Styling Synchronization**: To prevent visual discrepancies in layout containers and ensure unified selection outlines, the canvas workspace wrapper `div` handles all custom outer styles (borders, border-radius, background) for blockquotes, matching other blocks. The inner `<blockquote>` element renders the variant-specific decoration layout (such as highlight lines or quote watermarks) relative to the wrapper's padding-inset content area. In compiled outputs, these outer properties (background, border, border-radius, padding) and the inset offset are compiled directly onto the single semantic `<blockquote>` tag, maintaining perfect visual parity.
+
+
+- **Consistency across Preview and Compiler**: The conditional logic must be implemented in both the builder workspace canvas (`workspace-canvas.tsx`) and the edge page compiler (`compiler.ts`) to maintain perfect WYSIWYG synchronization.
 
 

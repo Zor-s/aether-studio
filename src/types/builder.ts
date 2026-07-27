@@ -24,6 +24,9 @@ export interface CanvasElement {
     gap?: string;
     widthMode?: string;
     minHeight?: string;
+    quoteLineColor?: string;
+    quoteVariant?: "classic" | "callout" | "elegant" | "banner";
+    backgroundColor?: string;
     mobile?: {
       padding?: string;
       margin?: string;
@@ -43,6 +46,9 @@ export interface CanvasElement {
       gap?: string;
       widthMode?: string;
       minHeight?: string;
+      quoteLineColor?: string;
+      quoteVariant?: "classic" | "callout" | "elegant" | "banner";
+      backgroundColor?: string;
     };
     tablet?: {
       padding?: string;
@@ -63,6 +69,9 @@ export interface CanvasElement {
       gap?: string;
       widthMode?: string;
       minHeight?: string;
+      quoteLineColor?: string;
+      quoteVariant?: "classic" | "callout" | "elegant" | "banner";
+      backgroundColor?: string;
     };
   };
   link?: string;
@@ -115,7 +124,6 @@ export const GOOGLE_FONTS_LIST = [
   "Courier Prime",
   "Space Grotesk",
 ];
-
 
 export interface Toast {
   id: string;

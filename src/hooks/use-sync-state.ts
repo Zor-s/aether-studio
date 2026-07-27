@@ -52,7 +52,26 @@ export function useSyncState({
       try {
         const parsed = JSON.parse(savedElements);
         if (Array.isArray(parsed)) {
-          setCanvasElements(parsed);
+          const migrated = parsed.map((el) => {
+            if (el.type === "blockquote" && el.styles) {
+              if (el.styles.borderStyle === "solid" && el.styles.borderWidth === "4" && !el.styles.quoteLineColor) {
+                const rest = { ...el.styles };
+                const legacyColor = rest.borderColor;
+                delete rest.borderStyle;
+                delete rest.borderWidth;
+                delete rest.borderColor;
+                return {
+                  ...el,
+                  styles: {
+                    ...rest,
+                    quoteLineColor: legacyColor || "#02a9f7",
+                  },
+                };
+              }
+            }
+            return el;
+          });
+          setCanvasElements(migrated);
         } else {
           console.error("Canvas elements in localStorage is not an array");
         }

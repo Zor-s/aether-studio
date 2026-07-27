@@ -1,5 +1,6 @@
 import { CanvasElement, PageSettings } from "@/types/builder";
 import { mapColor, getStyleClasses } from "./style-utils";
+import { SPACE_MAP } from "./style-maps";
 
 function escapeHtmlAttr(str: string): string {
   if (!str) return '';
@@ -30,6 +31,10 @@ function getElementInlineStyles(el: CanvasElement, palette: PageSettings['themeP
     } else {
       styles.push(`color: ${mapped}`);
     }
+  }
+
+  if (el.styles.backgroundColor) {
+    styles.push(`background-color: ${mapColor(el.styles.backgroundColor, palette)}`);
   }
 
   if (el.styles.borderStyle && el.styles.borderStyle !== 'none') {
@@ -97,8 +102,100 @@ function compileElement(el: CanvasElement, allElements: CanvasElement[], palette
     case 'subheading':
       return `<h3 id="${el.id}" class="font-semibold tracking-tight ${styleClasses}" ${styleAttr}>${el.content}</h3>`;
 
-    case 'blockquote':
-      return `<blockquote id="${el.id}" class="border-l-4 pl-4 italic ${styleClasses}" ${styleAttr}>${el.content}</blockquote>`;
+    case 'blockquote': {
+      const quoteLineColorVal = el.styles.quoteLineColor || palette.cyanActive;
+      const resolvedQuoteLineColor = mapColor(quoteLineColorVal, palette);
+      const variant = el.styles.quoteVariant || "classic";
+      const basePadding = el.styles.padding
+        ? SPACE_MAP[el.styles.padding] || el.styles.padding
+        : "0.5rem";
+
+      switch (variant) {
+        case "callout": {
+          const hasRadius = !!el.styles.borderRadius;
+          const radiusClass = hasRadius ? "" : "rounded-2xl";
+          const combinedStyles = [
+            inlineStyles,
+            `padding: ${basePadding}`,
+          ]
+            .filter(Boolean)
+            .join("; ");
+          const watermark = `<span class="absolute text-6xl font-serif text-cyan-active opacity-15 select-none pointer-events-none" style="left: ${basePadding}; top: calc(${basePadding} - 0.25rem);">“</span>`;
+          const alignClass = el.styles.align ? "" : "text-center";
+          const bgClass = el.styles.backgroundColor ? "" : "bg-accent-soft/15";
+
+          return `<blockquote id="${el.id}" class="relative overflow-hidden shadow-sm border border-panel-border/30 ${alignClass} ${radiusClass} ${bgClass} ${styleClasses}" style="${combinedStyles}">
+            ${watermark}
+            <p class="relative z-10 italic font-medium m-0 w-full">${el.content}</p>
+          </blockquote>`;
+        }
+
+        case "elegant": {
+          const paddingLeft = `calc(${basePadding} + 1.75rem)`;
+          const paddingRight = `calc(${basePadding} + 1.75rem)`;
+          const paddingTop = `calc(${basePadding} + 0.25rem)`;
+          const paddingBottom = `calc(${basePadding} + 0.25rem)`;
+          const combinedStyles = [
+            inlineStyles,
+            `padding-left: ${paddingLeft}`,
+            `padding-right: ${paddingRight}`,
+            `padding-top: ${paddingTop}`,
+            `padding-bottom: ${paddingBottom}`,
+          ]
+            .filter(Boolean)
+            .join("; ");
+          
+          const topQuote = `<span class="absolute text-5xl font-serif font-black leading-none select-none opacity-60" style="left: ${basePadding}; top: ${basePadding}; color: ${resolvedQuoteLineColor};">“</span>`;
+          const bottomQuote = `<span class="absolute text-5xl font-serif font-black leading-none select-none opacity-60" style="right: ${basePadding}; bottom: calc(${basePadding} - 0.5rem); color: ${resolvedQuoteLineColor};">”</span>`;
+
+          return `<blockquote id="${el.id}" class="relative w-full italic ${styleClasses}" style="${combinedStyles}">
+            ${topQuote}
+            <p class="m-0 leading-relaxed font-medium w-full">${el.content}</p>
+            ${bottomQuote}
+          </blockquote>`;
+        }
+
+        case "banner": {
+          const combinedStyles = [
+            inlineStyles,
+            `border-top: 2px solid ${resolvedQuoteLineColor}`,
+            `border-bottom: 2px solid ${resolvedQuoteLineColor}`,
+            `padding: ${basePadding}`,
+          ]
+            .filter(Boolean)
+            .join("; ");
+          const alignClass = el.styles.align ? "" : "text-center";
+          const bgClass = el.styles.backgroundColor ? "" : "bg-accent-soft/5";
+
+          return `<blockquote id="${el.id}" class="tracking-wide italic font-medium ${alignClass} ${bgClass} ${styleClasses}" style="${combinedStyles}">
+            “ ${el.content} ”
+          </blockquote>`;
+        }
+
+        case "classic":
+        default: {
+          const paddingLeft = `calc(${basePadding} + 1rem)`;
+          const combinedStyles = [
+            inlineStyles,
+            `padding-left: ${paddingLeft}`,
+            `padding-top: ${basePadding}`,
+            `padding-bottom: ${basePadding}`,
+            `padding-right: ${basePadding}`,
+          ]
+            .filter(Boolean)
+            .join("; ");
+          const accentLine = `<span class="absolute rounded-full" style="left: ${basePadding}; top: ${basePadding}; bottom: ${basePadding}; width: 4px; background-color: ${resolvedQuoteLineColor};"></span>`;
+          const hasRadius = !!el.styles.borderRadius;
+          const radiusClass = hasRadius ? "" : "rounded-r-xl";
+          const bgClass = el.styles.backgroundColor ? "" : "bg-accent-soft/10";
+
+          return `<blockquote id="${el.id}" class="relative italic border border-l-0 border-panel-border/30 ${radiusClass} ${bgClass} ${styleClasses}" style="${combinedStyles}">
+            ${accentLine}
+            ${el.content}
+          </blockquote>`;
+        }
+      }
+    }
 
     case 'list': {
       const items = el.content.split('\n').filter(Boolean);
@@ -428,6 +525,9 @@ function getCSSDeclaration(key: string, value: string, elType: string, palette: 
       return `background-color: ${mapped} !important; color: ${txtColor} !important;`;
     }
     return `color: ${mapped} !important;`;
+  }
+  if (key === 'backgroundColor') {
+    return `background-color: ${mapColor(value, palette)} !important;`;
   }
   if (key === 'borderStyle') {
     return `border-style: ${value} !important;`;
