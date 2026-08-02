@@ -57,6 +57,16 @@ export function buildDocumentHtml(
   <style>
     ${fontImports}
 
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+      margin: 0;
+    }
+
     :root {
       --brand-ice-blue: ${settings.themePalette.iceBlue};
       --brand-sky-blue: ${settings.themePalette.skyBlue};
@@ -93,13 +103,15 @@ export function buildDocumentHtml(
     /* Custom Base settings */
     body {
       background-color: ${mapColor(
-        settings.backgroundColor || "#01303f",
+        settings.backgroundColor || "#ffffff",
         settings.themePalette
       )};
-      color: ${mapColor(settings.textColor || "#ffffff", settings.themePalette)};
+      color: ${mapColor(settings.textColor || "#01303f", settings.themePalette)};
       font-family: '${settings.fontFamily || "Inter"}', sans-serif;
       min-height: 100vh;
+      width: 100%;
       margin: 0;
+      overflow-x: hidden;
       padding: ${
         settings.padding === "space-none"
           ? "0"
@@ -137,6 +149,7 @@ export function buildDocumentHtml(
       };
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
       gap: ${
         settings.gap === "space-none"
           ? "0"

@@ -7,6 +7,7 @@ import {
   getStyleProps,
   getResolvedStyles,
   mapColor,
+  formatSpaceDisplay,
 } from "@/lib/compiler/style-utils";
 import CanvasSelectionOverlay from "./canvas-selection-overlay";
 import BlockquoteElement from "./elements/blockquote-element";
@@ -76,13 +77,24 @@ export default function CanvasElementRenderer({
   const customStyles = getStyleProps(el, activeDevice, themePalette);
   const resolvedStyles = getResolvedStyles(el, activeDevice);
 
+  const marginDisplay = formatSpaceDisplay(resolvedStyles.margin);
+  const paddingDisplay = formatSpaceDisplay(resolvedStyles.padding);
+
+  const isFirstRootElement =
+    !el.parentId &&
+    canvasElements.filter((item) => !item.parentId).findIndex((item) => item.id === el.id) === 0;
+
+  const isTopEdge =
+    isFirstRootElement &&
+    (!resolvedStyles.margin || ["space-none", "space-xs", "space-sm"].includes(resolvedStyles.margin));
+
   let wrapperClasses = `group/item relative transition-all duration-200 ${
     !previewMode
       ? `cursor-pointer ${
           isSelected
-            ? "outline outline-2 outline-cyan-active outline-offset-[2px] z-20"
+            ? "outline outline-2 outline-cyan-active -outline-offset-2 z-20"
             : isHovered
-              ? "outline outline-dashed outline-1 outline-sky-blue outline-offset-[2px]"
+              ? "outline outline-1 outline-dashed outline-cyan-active/70 -outline-offset-1 z-10"
               : ""
         }`
       : ""
@@ -94,36 +106,24 @@ export default function CanvasElementRenderer({
     const variant = resolvedStyles.quoteVariant || "classic";
     const quoteLineColorVal = resolvedStyles.quoteLineColor || themePalette.cyanActive;
     const resolvedQuoteLineColor = mapColor(quoteLineColorVal, themePalette);
-    const hasRadius = !!resolvedStyles.borderRadius;
 
     wrapperStyles = normalizeBorderStyles(wrapperStyles || {});
 
-    if (variant === "classic") {
-      wrapperClasses += ` border border-l-0 border-panel-border/30 ${hasRadius ? "" : "rounded-r-xl"}`;
-      if (!resolvedStyles.backgroundColor) {
-        wrapperClasses += " bg-accent-soft/10";
-      }
-    } else if (variant === "callout") {
-      const alignClass = resolvedStyles.align ? "" : "text-center";
-      wrapperClasses += ` overflow-hidden shadow-sm border border-panel-border/30 ${alignClass} ${hasRadius ? "" : "rounded-2xl"}`;
-      if (!resolvedStyles.backgroundColor) {
-        wrapperClasses += " bg-accent-soft/15";
-      }
-    } else if (variant === "banner") {
+    if (variant === "banner") {
       const alignClass = resolvedStyles.align ? "" : "text-center";
       wrapperClasses += ` ${alignClass}`;
-      if (!resolvedStyles.backgroundColor) {
-        wrapperClasses += " bg-accent-soft/5";
-      }
       wrapperStyles = {
-        ...wrapperStyles,
         borderTopWidth: "2px",
         borderTopStyle: "solid",
         borderTopColor: resolvedQuoteLineColor,
         borderBottomWidth: "2px",
         borderBottomStyle: "solid",
         borderBottomColor: resolvedQuoteLineColor,
+        ...wrapperStyles,
       };
+    } else if (variant === "callout") {
+      const alignClass = resolvedStyles.align ? "" : "text-center";
+      wrapperClasses += ` overflow-hidden ${alignClass}`;
     }
   }
 
@@ -193,26 +193,21 @@ export default function CanvasElementRenderer({
       style={wrapperStyles}
       className={wrapperClasses}
     >
-      {/* Dropzone Guidelines */}
+      {/* Hover Indicator Badge */}
       {!previewMode && isHovered && !isSelected && (
-        <>
-          <div className="absolute top-0 left-0 right-0 h-0 flex items-center justify-center z-10 pointer-events-none animate-fadeIn">
-            <div className="w-full border-t border-dashed border-cyan-active/60 relative">
-              <div className="absolute -translate-y-1/2 left-1/2 -translate-x-1/2 bg-cyan-active text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md scale-90 hover:scale-100 transition-transform">
-                +
-              </div>
-            </div>
+        <div
+          className={`absolute ${
+            isTopEdge ? "top-full mt-1.5 left-0" : "-top-8 left-0"
+          } flex items-center pointer-events-none z-30 select-none animate-fadeIn px-0.5`}
+        >
+          <div className="bg-dark-slate/90 text-white text-[10px] font-bold rounded-md shadow-md flex items-center px-2 py-[3px] gap-1.5 border border-cyan-active/40 backdrop-blur-sm">
+            <span className="uppercase tracking-wide text-cyan-active">{el.type}</span>
+            <span className="opacity-40 font-normal">|</span>
+            <span className="font-medium text-slate-200">M: {marginDisplay}</span>
+            <span className="opacity-40 font-normal">•</span>
+            <span className="font-medium text-slate-200">P: {paddingDisplay}</span>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-0 flex items-center justify-center z-10 pointer-events-none animate-fadeIn">
-            <div className="w-full border-b border-dashed border-cyan-active/60 relative">
-              <div className="absolute -translate-y-1/2 left-1/2 -translate-x-1/2 bg-cyan-active text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md scale-90 hover:scale-100 transition-transform">
-                +
-              </div>
-            </div>
-          </div>
-          <div className="absolute top-0 bottom-0 left-0 w-0 border-l border-dashed border-cyan-active/30 pointer-events-none" />
-          <div className="absolute top-0 bottom-0 right-0 w-0 border-r border-dashed border-cyan-active/30 pointer-events-none" />
-        </>
+        </div>
       )}
 
       {/* Selection Overlay */}
@@ -224,6 +219,9 @@ export default function CanvasElementRenderer({
           onDuplicateElement={onDuplicateElement}
           onDeleteElement={onDeleteElement}
           setSelectedElementId={setSelectedElementId}
+          marginDisplay={marginDisplay}
+          paddingDisplay={paddingDisplay}
+          isTopEdge={isTopEdge}
         />
       )}
 
@@ -296,6 +294,7 @@ export default function CanvasElementRenderer({
           element={el}
           activeDevice={activeDevice}
           customStyles={customStyles}
+          previewMode={previewMode}
         />
       )}
     </div>

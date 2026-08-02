@@ -42,9 +42,9 @@ export default function Header({
   onThemeToggle,
 }: HeaderProps) {
   return (
-    <header className="h-header-h border-b border-panel-border bg-panel flex items-center justify-between px-md shrink-0 select-none z-30 transition-colors duration-200">
+    <header className="h-header-h border-b border-panel-border bg-panel flex items-center justify-between px-2 sm:px-md shrink-0 select-none z-30 transition-colors duration-200 min-w-0 max-w-full overflow-hidden">
       {/* Brand & Mobile Menu toggle */}
-      <div className="flex items-center gap-sm">
+      <div className="flex items-center gap-xs sm:gap-sm shrink-0">
         <button
           type="button"
           onClick={onMenuToggle}

@@ -27,6 +27,41 @@ export interface CanvasElement {
     quoteLineColor?: string;
     quoteVariant?: "classic" | "callout" | "elegant" | "banner";
     backgroundColor?: string;
+    listStyleType?:
+      | "disc"
+      | "circle"
+      | "square"
+      | "decimal"
+      | "decimal-leading-zero"
+      | "lower-alpha"
+      | "upper-alpha"
+      | "lower-roman"
+      | "upper-roman"
+      | "checkmark"
+      | "dash"
+      | "none";
+    itemSpacing?: string;
+    markerColor?: string;
+    startNumber?: number;
+    buttonVariant?: "solid" | "outline" | "ghost" | "soft" | "glass";
+    buttonSize?: "sm" | "md" | "lg" | "xl";
+    buttonWidth?: "auto" | "full";
+    buttonIcon?:
+      | "none"
+      | "arrow-right"
+      | "external-link"
+      | "download"
+      | "mail"
+      | "play"
+      | "star"
+      | "heart"
+      | "check"
+      | "plus"
+      | "search"
+      | "github";
+    iconPosition?: "left" | "right";
+    hoverEffect?: "none" | "lift" | "scale" | "glow" | "shine";
+    buttonState?: "normal" | "disabled" | "loading";
     mobile?: {
       padding?: string;
       margin?: string;
@@ -49,6 +84,41 @@ export interface CanvasElement {
       quoteLineColor?: string;
       quoteVariant?: "classic" | "callout" | "elegant" | "banner";
       backgroundColor?: string;
+      listStyleType?:
+        | "disc"
+        | "circle"
+        | "square"
+        | "decimal"
+        | "decimal-leading-zero"
+        | "lower-alpha"
+        | "upper-alpha"
+        | "lower-roman"
+        | "upper-roman"
+        | "checkmark"
+        | "dash"
+        | "none";
+      itemSpacing?: string;
+      markerColor?: string;
+      startNumber?: number;
+      buttonVariant?: "solid" | "outline" | "ghost" | "soft" | "glass";
+      buttonSize?: "sm" | "md" | "lg" | "xl";
+      buttonWidth?: "auto" | "full";
+      buttonIcon?:
+        | "none"
+        | "arrow-right"
+        | "external-link"
+        | "download"
+        | "mail"
+        | "play"
+        | "star"
+        | "heart"
+        | "check"
+        | "plus"
+        | "search"
+        | "github";
+      iconPosition?: "left" | "right";
+      hoverEffect?: "none" | "lift" | "scale" | "glow" | "shine";
+      buttonState?: "normal" | "disabled" | "loading";
     };
     tablet?: {
       padding?: string;
@@ -72,9 +142,45 @@ export interface CanvasElement {
       quoteLineColor?: string;
       quoteVariant?: "classic" | "callout" | "elegant" | "banner";
       backgroundColor?: string;
+      listStyleType?:
+        | "disc"
+        | "circle"
+        | "square"
+        | "decimal"
+        | "decimal-leading-zero"
+        | "lower-alpha"
+        | "upper-alpha"
+        | "lower-roman"
+        | "upper-roman"
+        | "checkmark"
+        | "dash"
+        | "none";
+      itemSpacing?: string;
+      markerColor?: string;
+      startNumber?: number;
+      buttonVariant?: "solid" | "outline" | "ghost" | "soft" | "glass";
+      buttonSize?: "sm" | "md" | "lg" | "xl";
+      buttonWidth?: "auto" | "full";
+      buttonIcon?:
+        | "none"
+        | "arrow-right"
+        | "external-link"
+        | "download"
+        | "mail"
+        | "play"
+        | "star"
+        | "heart"
+        | "check"
+        | "plus"
+        | "search"
+        | "github";
+      iconPosition?: "left" | "right";
+      hoverEffect?: "none" | "lift" | "scale" | "glow" | "shine";
+      buttonState?: "normal" | "disabled" | "loading";
     };
   };
   link?: string;
+  linkTarget?: "_self" | "_blank";
 }
 
 export interface PageSettings {

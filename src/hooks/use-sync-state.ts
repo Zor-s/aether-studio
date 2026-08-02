@@ -4,6 +4,7 @@ import { CanvasElement, PageSettings } from "@/types/builder";
 interface SyncStateProps {
   canvasElements: CanvasElement[];
   setCanvasElements: (elements: CanvasElement[]) => void;
+  initializeHistory?: (elements: CanvasElement[]) => void;
   pageSettings: PageSettings;
   setPageSettings: (settings: PageSettings) => void;
   showToast: (message: string, type?: "success" | "warning" | "info") => void;
@@ -12,6 +13,7 @@ interface SyncStateProps {
 export function useSyncState({
   canvasElements,
   setCanvasElements,
+  initializeHistory,
   pageSettings,
   setPageSettings,
   showToast,
@@ -35,8 +37,8 @@ export function useSyncState({
         deepTeal: "#02577a",
         darkSlate: "#01303f",
       },
-      backgroundColor: "#01303f",
-      textColor: "#ffffff",
+      backgroundColor: "#ffffff",
+      textColor: "#01303f",
       fontFamily: "Inter",
       widthMode: "boxed-md",
       padding: "space-lg",
@@ -71,7 +73,11 @@ export function useSyncState({
             }
             return el;
           });
-          setCanvasElements(migrated);
+          if (initializeHistory) {
+            initializeHistory(migrated);
+          } else {
+            setCanvasElements(migrated);
+          }
         } else {
           console.error("Canvas elements in localStorage is not an array");
         }
@@ -108,7 +114,13 @@ export function useSyncState({
       const { type, elements, settings, timestamp } = event.data;
       if (type === "STATE_MUTATED" && timestamp > localTimestampRef.current) {
         localTimestampRef.current = timestamp;
-        if (elements && Array.isArray(elements)) setCanvasElements(elements);
+        if (elements && Array.isArray(elements)) {
+          if (initializeHistory) {
+            initializeHistory(elements);
+          } else {
+            setCanvasElements(elements);
+          }
+        }
         if (settings) {
           setPageSettings({
             ...defaultPageSettings,
@@ -131,7 +143,7 @@ export function useSyncState({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [setCanvasElements, setPageSettings, showToast]);
+  }, [setCanvasElements, initializeHistory, setPageSettings, showToast]);
 
   // 2. Debounce writing mutations to localStorage & broadcasting changes
   useEffect(() => {

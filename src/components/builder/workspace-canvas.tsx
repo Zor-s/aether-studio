@@ -42,6 +42,9 @@ export default function WorkspaceCanvas({
   const [customWidth, setCustomWidth] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [iframeHeight, setIframeHeight] = useState<number | null>(null);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+
   const themePalette = pageSettings.themePalette;
 
   const [prevActiveDevice, setPrevActiveDevice] = useState(activeDevice);
@@ -71,6 +74,32 @@ export default function WorkspaceCanvas({
       : "";
 
   const compiledHtml = previewMode ? compileLayout(canvasElements, pageSettings) : "";
+
+  React.useEffect(() => {
+    setIframeHeight(null);
+  }, [previewMode, activeDevice, compiledHtml]);
+
+  const handleIframeLoad = () => {
+    if (iframeRef.current?.contentWindow) {
+      try {
+        const doc = iframeRef.current.contentWindow.document;
+        const updateHeight = () => {
+          const h = Math.max(
+            doc.body?.scrollHeight || 0,
+            doc.documentElement?.scrollHeight || 0
+          );
+          if (h > 0) setIframeHeight(h);
+        };
+        updateHeight();
+        if (doc.body) {
+          const observer = new ResizeObserver(updateHeight);
+          observer.observe(doc.body);
+        }
+      } catch (err) {
+        console.error("Error measuring iframe content height:", err);
+      }
+    }
+  };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (previewMode) return;
@@ -110,17 +139,23 @@ export default function WorkspaceCanvas({
 
   const getDeviceFrameStyles = () => {
     if (activeDevice === "mobile") {
-      return "w-[375px] h-[640px] rounded-[40px] border-[12px] border-dark-slate shadow-2xl relative bg-panel overflow-hidden";
+      return "w-[375px] max-w-full h-full sm:h-[640px] max-h-full rounded-[28px] sm:rounded-[40px] border-[8px] sm:border-[12px] border-dark-slate shadow-2xl relative bg-panel flex flex-col shrink-0 overflow-hidden";
     }
     if (activeDevice === "tablet") {
-      return "w-[768px] h-[900px] rounded-[24px] border-[10px] border-dark-slate shadow-xl relative bg-panel overflow-hidden";
+      return "w-[768px] min-w-[768px] h-full sm:h-[900px] max-h-full rounded-[18px] sm:rounded-[24px] border-[6px] sm:border-[10px] border-dark-slate shadow-xl relative bg-panel flex flex-col shrink-0 overflow-hidden";
     }
-    return "w-full min-h-full bg-panel shadow-sm";
+    return previewMode
+      ? "w-full min-w-[1024px] lg:min-w-0 h-full bg-panel shadow-sm flex flex-col shrink-0 overflow-hidden"
+      : "w-full min-w-[1024px] lg:min-w-0 h-full rounded-2xl border-[6px] sm:border-[10px] border-dark-slate shadow-2xl relative bg-panel flex flex-col shrink-0 overflow-hidden";
   };
 
   return (
     <div
-      className="light flex-1 bg-background canvas-grid overflow-y-auto custom-scrollbar flex items-start justify-center p-md sm:p-xl select-none"
+      className={`light flex-1 h-full bg-background canvas-grid flex justify-start lg:justify-center select-none overflow-x-auto overflow-y-hidden ${
+        previewMode && activeDevice === "desktop"
+          ? "items-stretch p-0"
+          : "items-center p-xs sm:p-md lg:p-xl"
+      }`}
       onClick={() => {
         if (!previewMode) {
           setSelectedElementId(null);
@@ -136,7 +171,7 @@ export default function WorkspaceCanvas({
         style={
           {
             ...(customWidth !== null && activeDevice !== "desktop"
-              ? { width: `${customWidth}px` }
+              ? { width: `${customWidth}px`, minWidth: `${customWidth}px` }
               : {}),
             "--brand-ice-blue": themePalette.iceBlue,
             "--brand-sky-blue": themePalette.skyBlue,
@@ -144,10 +179,10 @@ export default function WorkspaceCanvas({
             "--brand-deep-teal": themePalette.deepTeal,
             "--brand-dark-slate": themePalette.darkSlate,
             backgroundColor: mapColor(
-              pageSettings.backgroundColor || "#01303f",
+              pageSettings.backgroundColor || "#ffffff",
               themePalette
             ),
-            color: mapColor(pageSettings.textColor || "#ffffff", themePalette),
+            color: mapColor(pageSettings.textColor || "#01303f", themePalette),
             fontFamily: pageSettings.fontFamily
               ? `'${pageSettings.fontFamily}', sans-serif`
               : undefined,
@@ -161,6 +196,32 @@ export default function WorkspaceCanvas({
           </div>
         )}
 
+        {activeDevice === "tablet" && (
+          <div className="absolute top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-slate-900 z-30 flex items-center justify-center">
+            <div className="w-1 h-1 rounded-full bg-slate-800" />
+          </div>
+        )}
+
+        {activeDevice === "desktop" && !previewMode && (
+          <div className="w-full h-8 bg-dark-slate border-b border-panel-border/30 px-3 flex items-center justify-between shrink-0 select-none z-30">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-0.5 rounded-md bg-slate-900/60 border border-white/10 text-[10px] text-slate-300 font-mono">
+              <svg className="w-3 h-3 text-cyan-active shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 11h9" />
+              </svg>
+              <span className="truncate max-w-[180px] sm:max-w-[320px]">https://workspace.aether.studio/desktop-preview</span>
+            </div>
+            <div className="w-12 flex justify-end">
+              <span className="w-2 h-2 rounded-full bg-cyan-active/60 animate-pulse" />
+            </div>
+          </div>
+        )}
+
         <CanvasDeviceResizer
           activeDevice={activeDevice}
           previewMode={previewMode}
@@ -171,18 +232,26 @@ export default function WorkspaceCanvas({
         />
 
         <div
-          className="w-full h-full overflow-y-auto"
+          className={`w-full flex-1 min-h-0 ${previewMode ? "flex flex-col overflow-hidden" : "overflow-y-auto overflow-x-auto custom-scrollbar"}`}
           style={{
-            padding: PAGE_PADDING_MAP[pageSettings.padding ?? ""] ?? "2rem 1.5rem",
+            padding: previewMode ? 0 : (PAGE_PADDING_MAP[pageSettings.padding ?? ""] ?? "2rem 1.5rem"),
             minHeight: activeDevice === "desktop" ? "100%" : undefined,
           }}
         >
-          <div className="flex flex-col w-full h-full">
+          <div className={`w-full h-full ${previewMode ? "flex-1 flex flex-col" : "flex flex-col"}`}>
             {previewMode ? (
               <iframe
+                ref={iframeRef}
                 srcDoc={compiledHtml}
-                className="w-full h-full border-none bg-transparent"
+                className="w-full border-none bg-transparent flex-1"
+                style={{
+                  height: activeDevice === "desktop"
+                    ? (iframeHeight ? `${iframeHeight}px` : "100%")
+                    : "100%",
+                  minHeight: "100%",
+                }}
                 title="Portfolio Preview"
+                onLoad={handleIframeLoad}
               />
             ) : (
               <div

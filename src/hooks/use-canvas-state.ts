@@ -37,6 +37,15 @@ export function useCanvasState(
     [history, historyIndex]
   );
 
+  const initializeHistory = useCallback(
+    (elements: CanvasElement[]) => {
+      setCanvasElements(elements);
+      setHistory([elements]);
+      setHistoryIndex(0);
+    },
+    []
+  );
+
   const syncSelectedElement = useCallback(
     (snapshot: CanvasElement[]) => {
       if (selectedElement) {
@@ -230,6 +239,7 @@ export function useCanvasState(
     setCanvasElements,
     history,
     historyIndex,
+    initializeHistory,
     handleUndo,
     handleRedo,
     handleJumpToHistoryStep,

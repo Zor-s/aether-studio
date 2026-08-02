@@ -8,7 +8,7 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
     content: "Alex Mercer",
     styles: {
       fontSize: "text-3xl",
-      color: "#01303f",
+      color: "var(--brand-dark-slate)",
       margin: "space-sm",
       padding: "space-none",
       align: "center",
@@ -22,7 +22,7 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
       "Lead Software Architect and Developer based in San Francisco. Building clean, high-performance web applications at edge memory scales.",
     styles: {
       fontSize: "text-md",
-      color: "#02577a",
+      color: "var(--brand-deep-teal)",
       margin: "space-md",
       padding: "space-none",
       align: "center",
@@ -36,7 +36,7 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
     link: "https://github.com/alex-mercer",
     styles: {
       fontSize: "text-xs",
-      color: "#02a9f7",
+      color: "var(--brand-cyan-active)",
       margin: "space-lg",
       padding: "space-none",
       align: "center",
@@ -53,7 +53,7 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
       padding: "space-none",
       borderStyle: "solid",
       borderWidth: "1",
-      borderColor: "#02577a",
+      borderColor: "var(--brand-deep-teal)",
     },
   },
   {
@@ -64,11 +64,10 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
       "Building clean, high-performance web applications at edge memory scales.",
     styles: {
       fontSize: "text-md",
-      color: "#02577a",
+      color: "var(--brand-deep-teal)",
       margin: "space-xl",
       padding: "space-sm",
-      borderRadius: "rounded-xl",
-      quoteLineColor: "#02a9f7",
+      quoteLineColor: "var(--brand-cyan-active)",
     },
   },
   {
@@ -79,7 +78,7 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
       "Cloudflare Edge network integration\nOptimized server-side HTML rendering\nLightweight responsive layout controls",
     styles: {
       fontSize: "text-sm",
-      color: "#02577a",
+      color: "var(--brand-deep-teal)",
       margin: "space-md",
       padding: "space-none",
     },
@@ -88,7 +87,7 @@ export const INITIAL_ELEMENTS: CanvasElement[] = [
 
 export function createNewElement(
   elementId: string,
-  themePalette?: PageSettings["themePalette"]
+  _themePalette?: PageSettings["themePalette"]
 ): CanvasElement | CanvasElement[] | null {
   const baseId = `el-${Date.now()}`;
 
@@ -151,7 +150,7 @@ export function createNewElement(
         content: "Click to Edit Heading",
         styles: {
           fontSize: "text-xl",
-          color: themePalette?.darkSlate || "#01303f",
+          color: "var(--brand-dark-slate)",
           margin: "space-sm",
           align: "left",
         },
@@ -166,7 +165,7 @@ export function createNewElement(
           "This is a new text block component added from your builder elements selector. Adjust margins and sizes inside the styles panel.",
         styles: {
           fontSize: "text-sm",
-          color: themePalette?.deepTeal || "#02577a",
+          color: "var(--brand-deep-teal)",
           margin: "space-sm",
           align: "left",
         },
@@ -179,12 +178,20 @@ export function createNewElement(
         category: "basic",
         content: "Action Target Button",
         link: "#",
+        linkTarget: "_self",
         styles: {
           fontSize: "text-xs",
-          color: themePalette?.cyanActive || "#02a9f7",
+          color: "var(--brand-cyan-active)",
           margin: "space-sm",
           align: "left",
           borderRadius: "rounded-md",
+          buttonVariant: "solid",
+          buttonSize: "md",
+          buttonWidth: "auto",
+          buttonIcon: "none",
+          iconPosition: "right",
+          hoverEffect: "lift",
+          buttonState: "normal",
         },
       };
 
@@ -196,7 +203,7 @@ export function createNewElement(
         content: "Secondary Subheading Text",
         styles: {
           fontSize: "text-lg",
-          color: themePalette?.deepTeal || "#02577a",
+          color: "var(--brand-deep-teal)",
           margin: "space-sm",
           align: "left",
         },
@@ -211,10 +218,10 @@ export function createNewElement(
           "This is a blockquote element representing a highlighted quote or testimonial.",
         styles: {
           fontSize: "text-md",
-          color: themePalette?.deepTeal || "#02577a",
+          color: "var(--brand-deep-teal)",
           margin: "space-md",
           padding: "space-sm",
-          quoteLineColor: themePalette?.cyanActive || "#02a9f7",
+          quoteLineColor: "var(--brand-cyan-active)",
           quoteVariant: "classic",
         },
       };
@@ -225,11 +232,14 @@ export function createNewElement(
         type: "list",
         category: "basic",
         content:
-          "List item bullet point one\nList item bullet point two\nList item bullet point three",
+          "Main feature item one\n  Sub-bullet feature item A\n  Sub-bullet feature item B\nMain feature item two",
         styles: {
           fontSize: "text-sm",
-          color: themePalette?.deepTeal || "#02577a",
+          color: "var(--brand-deep-teal)",
           margin: "space-sm",
+          listStyleType: "disc",
+          itemSpacing: "space-xs",
+          markerColor: "var(--brand-cyan-active)",
         },
       };
 
@@ -243,7 +253,7 @@ export function createNewElement(
           margin: "space-md",
           borderStyle: "solid",
           borderWidth: "1",
-          borderColor: themePalette?.cyanActive || "#02a9f7",
+          borderColor: "var(--brand-cyan-active)",
         },
       };
 

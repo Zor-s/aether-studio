@@ -129,6 +129,41 @@ export function getCSSDeclaration(
     return `min-height: ${heightMap[value] || value} !important;`;
   }
 
+  if (key === "buttonWidth") {
+    return `width: ${value === "full" ? "100%" : "auto"} !important;`;
+  }
+
+  if (key === "buttonSize") {
+    const SIZE_CSS: Record<string, string> = {
+      sm: "height: 2rem !important; padding-left: 0.75rem !important; padding-right: 0.75rem !important; font-size: 0.75rem !important;",
+      md: "height: 2.5rem !important; padding-left: 1.5rem !important; padding-right: 1.5rem !important; font-size: 0.75rem !important;",
+      lg: "height: 3rem !important; padding-left: 2rem !important; padding-right: 2rem !important; font-size: 0.875rem !important;",
+      xl: "height: 3.5rem !important; padding-left: 2.5rem !important; padding-right: 2.5rem !important; font-size: 1rem !important;",
+    };
+    return SIZE_CSS[value] || SIZE_CSS.md;
+  }
+
+  if (key === "buttonVariant") {
+    if (value === "outline" || value === "ghost") {
+      return `background-color: transparent !important;`;
+    }
+    if (value === "soft") {
+      return `background-color: var(--accent-soft, rgba(2, 169, 247, 0.15)) !important;`;
+    }
+    if (value === "glass") {
+      return `background-color: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important;`;
+    }
+  }
+
+  if (key === "buttonState") {
+    if (value === "disabled") {
+      return `opacity: 0.5 !important; pointer-events: none !important; cursor: not-allowed !important;`;
+    }
+    if (value === "loading") {
+      return `opacity: 0.8 !important; pointer-events: none !important; cursor: wait !important;`;
+    }
+  }
+
   return "";
 }
 

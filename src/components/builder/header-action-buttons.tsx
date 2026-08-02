@@ -77,7 +77,7 @@ export default function HeaderActionButtons({
   };
 
   return (
-    <div className="flex items-center gap-xs sm:gap-sm">
+    <div className="flex items-center gap-xs sm:gap-sm shrink-0">
       {/* Undo/Redo (Hidden in preview mode) */}
       {!previewMode && (
         <div className="hidden sm:flex items-center gap-1 border-r border-panel-border pr-sm relative">
@@ -137,83 +137,81 @@ export default function HeaderActionButtons({
             </svg>
           </button>
 
-          {historyLength > 1 && (
-            <div className="relative ml-xs">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHistoryDropdownOpen(!historyDropdownOpen);
-                }}
-                className="flex items-center gap-xs text-[10px] font-bold text-text-muted hover:text-cyan-active transition-colors duration-200 bg-background/50 hover:bg-background border border-panel-border rounded-lg px-sm py-[4px] cursor-pointer"
-                title="View edit history stack"
+          <div className="relative ml-xs">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setHistoryDropdownOpen(!historyDropdownOpen);
+              }}
+              className="flex items-center gap-xs text-[10px] font-bold text-text-muted hover:text-cyan-active transition-colors duration-200 bg-background/50 hover:bg-background border border-panel-border rounded-lg px-sm py-[4px] cursor-pointer"
+              title="View edit history stack"
+            >
+              <span>
+                History ({historyIndex + 1}/{Math.max(historyLength, 1)})
+              </span>
+              <svg
+                className={`w-3 h-3 transition-transform duration-200 ${
+                  historyDropdownOpen ? "rotate-180" : ""
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
               >
-                <span>
-                  History ({historyIndex + 1}/{historyLength})
-                </span>
-                <svg
-                  className={`w-3 h-3 transition-transform duration-200 ${
-                    historyDropdownOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
 
-              {historyDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40 cursor-default"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setHistoryDropdownOpen(false);
-                    }}
-                  />
-                  <div className="absolute top-[32px] right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col w-[200px] overflow-hidden animate-fadeIn">
-                    <div className="px-sm py-xs border-b border-panel-border bg-background/60">
-                      <span className="text-[9px] font-bold text-foreground uppercase tracking-widest">
-                        Workspace History
-                      </span>
-                    </div>
-                    <div className="max-h-48 overflow-y-auto custom-scrollbar p-xs flex flex-col gap-[2px] bg-panel">
-                      {historyList.map((stateElements, idx) => {
-                        const isActive = idx === historyIndex;
-                        const label = getHistoryActionLabel(historyList[idx - 1], stateElements);
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onJumpToHistoryStep(idx);
-                              setHistoryDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-sm py-[6px] rounded-lg text-[10px] font-medium transition-colors cursor-pointer flex items-center justify-between ${
-                              isActive
-                                ? "bg-cyan-active/10 text-cyan-active font-bold"
-                                : "text-foreground hover:bg-accent-soft hover:text-cyan-active"
-                            }`}
-                          >
-                            <span className="truncate max-w-[130px]">{label}</span>
-                            <span className="text-[8px] text-text-muted">#{idx + 1}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+            {historyDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHistoryDropdownOpen(false);
+                  }}
+                />
+                <div className="absolute top-[32px] right-0 bg-panel border border-panel-border rounded-xl shadow-xl z-50 flex flex-col w-[200px] overflow-hidden animate-fadeIn">
+                  <div className="px-sm py-xs border-b border-panel-border bg-background/60">
+                    <span className="text-[9px] font-bold text-foreground uppercase tracking-widest">
+                      Workspace History
+                    </span>
                   </div>
-                </>
-              )}
-            </div>
-          )}
+                  <div className="max-h-48 overflow-y-auto custom-scrollbar p-xs flex flex-col gap-[2px] bg-panel">
+                    {historyList.map((stateElements, idx) => {
+                      const isActive = idx === historyIndex;
+                      const label = getHistoryActionLabel(historyList[idx - 1], stateElements);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onJumpToHistoryStep(idx);
+                            setHistoryDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-sm py-[6px] rounded-lg text-[10px] font-medium transition-colors cursor-pointer flex items-center justify-between ${
+                            isActive
+                              ? "bg-cyan-active/10 text-cyan-active font-bold"
+                              : "text-foreground hover:bg-accent-soft hover:text-cyan-active"
+                          }`}
+                        >
+                          <span className="truncate max-w-[130px]">{label}</span>
+                          <span className="text-[8px] text-text-muted">#{idx + 1}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
       {!previewMode && (
-        <div className="flex items-center gap-[6px] px-sm py-[6px] rounded-lg bg-background border border-panel-border">
+        <div className="flex items-center gap-[6px] px-1.5 py-1 sm:px-sm sm:py-[6px] rounded-lg bg-background border border-panel-border shrink-0">
           <span
             className={`w-[6px] h-[6px] rounded-full ${
               syncStatus === "synced" ? "bg-emerald-500 animate-pulse" : "bg-amber-500 animate-bounce"
@@ -228,12 +226,12 @@ export default function HeaderActionButtons({
       <button
         type="button"
         onClick={onThemeToggle}
-        className="flex items-center justify-center w-10 h-10 rounded-lg border border-panel-border bg-panel text-text-muted hover:bg-accent-soft hover:text-foreground transition-all duration-200 focus:outline-none cursor-pointer"
+        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg border border-panel-border bg-panel text-text-muted hover:bg-accent-soft hover:text-foreground transition-all duration-200 focus:outline-none cursor-pointer shrink-0"
         title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
       >
         {theme === "light" ? (
           <svg
-            className="w-4.5 h-4.5 text-indigo-500 transition-transform duration-300 hover:rotate-45"
+            className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-indigo-500 transition-transform duration-300 hover:rotate-45"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -247,7 +245,7 @@ export default function HeaderActionButtons({
           </svg>
         ) : (
           <svg
-            className="w-4.5 h-4.5 text-amber-400 transition-transform duration-300 hover:rotate-90"
+            className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-400 transition-transform duration-300 hover:rotate-90"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -265,7 +263,7 @@ export default function HeaderActionButtons({
       <button
         type="button"
         onClick={() => setPreviewMode(!previewMode)}
-        className={`flex items-center gap-xs px-sm h-10 rounded-lg text-xs font-semibold border transition-all duration-200 cursor-pointer ${
+        className={`flex items-center gap-xs px-2 sm:px-sm h-8 sm:h-10 rounded-lg text-xs font-semibold border transition-all duration-200 cursor-pointer shrink-0 ${
           previewMode
             ? "bg-dark-slate border-deep-teal text-white hover:bg-dark-slate/90"
             : "bg-panel border-panel-border text-text-muted hover:bg-accent-soft hover:text-foreground"
@@ -282,7 +280,7 @@ export default function HeaderActionButtons({
                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
               />
             </svg>
-            <span>Edit Page</span>
+            <span className="hidden sm:inline">Edit Page</span>
           </>
         ) : (
           <>
@@ -300,7 +298,7 @@ export default function HeaderActionButtons({
                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
-            <span>Preview</span>
+            <span className="hidden sm:inline">Preview</span>
           </>
         )}
       </button>
@@ -308,7 +306,7 @@ export default function HeaderActionButtons({
       <button
         type="button"
         onClick={onPublish}
-        className="flex items-center gap-xs px-sm h-10 rounded-lg text-xs font-bold text-white bg-cyan-active hover:bg-cyan-active/90 active:scale-95 shadow-md shadow-cyan-active/20 hover:shadow-cyan-active/30 transition-all duration-200 focus:outline-none cursor-pointer"
+        className="flex items-center gap-xs px-2 sm:px-sm h-8 sm:h-10 rounded-lg text-xs font-bold text-white bg-cyan-active hover:bg-cyan-active/90 active:scale-95 shadow-md shadow-cyan-active/20 hover:shadow-cyan-active/30 transition-all duration-200 focus:outline-none cursor-pointer shrink-0"
         title="Compile layout and publish to Edge Workers (Cloudflare R2)"
       >
         <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -319,7 +317,7 @@ export default function HeaderActionButtons({
             d="M8.684 10.742l-5.368-2.684L3 8l17.684-7 1.632 1.632-7 17.684-.058-.029-2.684-5.368M13.684 10.316l-3.368 3.368"
           />
         </svg>
-        <span className="hidden xs:inline">Publish</span>
+        <span className="hidden sm:inline">Publish</span>
       </button>
     </div>
   );

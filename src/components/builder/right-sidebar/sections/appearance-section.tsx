@@ -23,7 +23,7 @@ export default function AppearanceSection({
   const isLayoutType = ["button", "section", "container", "grid-2"].includes(selectedElement.type);
 
   return (
-    <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm">
+    <div className="flex flex-col gap-sm">
       <span className="text-xs font-bold text-foreground">
         Colors & Appearance
       </span>
@@ -125,6 +125,203 @@ export default function AppearanceSection({
                   themePalette={themePalette}
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {selectedElement.type === "list" && (
+          <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm animate-slideDown">
+            <div className="flex flex-col gap-xs">
+              {renderLabel("listStyleType", "Marker Style")}
+              <CustomSelect
+                value={getStyleValue("listStyleType") || "disc"}
+                onChange={(val) => handleStyleChange("listStyleType", val)}
+                options={[
+                  { value: "disc", label: "● Bullet (Disc)" },
+                  { value: "circle", label: "○ Circle (Hollow)" },
+                  { value: "square", label: "■ Square (Solid)" },
+                  { value: "checkmark", label: "✓ Checkmark Icon" },
+                  { value: "dash", label: "– Dash Symbol" },
+                  { value: "none", label: "None (Unstyled)" },
+                  { value: "decimal", label: "1. 2. 3. Numbered" },
+                  { value: "decimal-leading-zero", label: "01. 02. Zero Padded" },
+                  { value: "lower-alpha", label: "a. b. c. Lower Alpha" },
+                  { value: "upper-alpha", label: "A. B. C. Upper Alpha" },
+                  { value: "lower-roman", label: "i. ii. iii. Lower Roman" },
+                  { value: "upper-roman", label: "I. II. III. Upper Roman" },
+                ]}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-foreground leading-snug">
+                  Item Spacing
+                </span>
+                <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
+                  Vertical gap between list items
+                </span>
+              </div>
+              <div className="w-28 shrink-0">
+                <CustomSelect
+                  value={getStyleValue("itemSpacing") || "space-xs"}
+                  onChange={(val) => handleStyleChange("itemSpacing", val)}
+                  options={[
+                    { value: "space-none", label: "None (0px)" },
+                    { value: "space-xs", label: "XS (4px)" },
+                    { value: "space-sm", label: "SM (8px)" },
+                    { value: "space-md", label: "MD (16px)" },
+                    { value: "space-lg", label: "LG (24px)" },
+                  ]}
+                  className="px-xs py-[4px]"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-foreground leading-snug">
+                  Bullet / Marker Color
+                </span>
+                <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
+                  Accent color for bullets or numbers
+                </span>
+              </div>
+              <div className="flex items-center gap-xs">
+                <input
+                  type="text"
+                  value={getStyleValue("markerColor") || themePalette?.cyanActive}
+                  onChange={(e) => handleStyleChange("markerColor", e.target.value)}
+                  placeholder="e.g. #02a9f7"
+                  className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
+                />
+                <ColorPicker
+                  value={getStyleValue("markerColor") || themePalette?.cyanActive}
+                  onChange={(val) => handleStyleChange("markerColor", val)}
+                  themePalette={themePalette}
+                />
+              </div>
+            </div>
+
+            {["decimal", "decimal-leading-zero", "lower-alpha", "upper-alpha", "lower-roman", "upper-roman"].includes(
+              getStyleValue("listStyleType")
+            ) && (
+              <div className="flex items-center justify-between gap-sm border-t border-panel-border/20 pt-sm animate-slideDown">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-foreground leading-snug">
+                    Start Index Number
+                  </span>
+                  <span className="text-[8px] text-text-muted mt-[4px] leading-normal">
+                    Initial number for ordered lists
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  min="1"
+                  max="999"
+                  value={getStyleValue("startNumber") || "1"}
+                  onChange={(e) => handleStyleChange("startNumber", e.target.value)}
+                  className="w-16 text-[9px] font-mono text-center bg-background border border-panel-border rounded px-xs py-[2px] text-foreground focus:outline-none"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {selectedElement.type === "button" && (
+          <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm animate-slideDown">
+            <div className="flex flex-col gap-xs">
+              {renderLabel("buttonVariant", "Button Visual Style")}
+              <CustomSelect
+                value={getStyleValue("buttonVariant") || "solid"}
+                onChange={(val) => handleStyleChange("buttonVariant", val)}
+                options={[
+                  { value: "solid", label: "Solid Color Fill" },
+                  { value: "outline", label: "Outline Line Border" },
+                  { value: "ghost", label: "Ghost Transparent" },
+                  { value: "soft", label: "Soft Tint Fill" },
+                  { value: "glass", label: "Glassmorphism Blur" },
+                ]}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-sm">
+              <div className="flex flex-col gap-xs">
+                {renderLabel("buttonSize", "Button Size")}
+                <CustomSelect
+                  value={getStyleValue("buttonSize") || "md"}
+                  onChange={(val) => handleStyleChange("buttonSize", val)}
+                  options={[
+                    { value: "sm", label: "Small (SM)" },
+                    { value: "md", label: "Medium (MD)" },
+                    { value: "lg", label: "Large (LG)" },
+                    { value: "xl", label: "Extra Large (XL)" },
+                  ]}
+                />
+              </div>
+
+              <div className="flex flex-col gap-xs">
+                {renderLabel("buttonWidth", "Button Width")}
+                <CustomSelect
+                  value={getStyleValue("buttonWidth") || "auto"}
+                  onChange={(val) => handleStyleChange("buttonWidth", val)}
+                  options={[
+                    { value: "auto", label: "Fit Content" },
+                    { value: "full", label: "Full Width (100%)" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-sm">
+              <div className="flex flex-col gap-xs">
+                {renderLabel("buttonIcon", "Button Icon")}
+                <CustomSelect
+                  value={getStyleValue("buttonIcon") || "none"}
+                  onChange={(val) => handleStyleChange("buttonIcon", val)}
+                  options={[
+                    { value: "none", label: "None" },
+                    { value: "arrow-right", label: "Arrow Right →" },
+                    { value: "external-link", label: "External Link ↗" },
+                    { value: "download", label: "Download ⤓" },
+                    { value: "mail", label: "Mail Envelope ✉" },
+                    { value: "play", label: "Play Button ▶" },
+                    { value: "star", label: "Star Rating ★" },
+                    { value: "heart", label: "Heart Like ♥" },
+                    { value: "check", label: "Checkmark ✓" },
+                    { value: "plus", label: "Plus Add +" },
+                    { value: "search", label: "Search 🔍" },
+                    { value: "github", label: "GitHub Code 💻" },
+                  ]}
+                />
+              </div>
+
+              <div className="flex flex-col gap-xs">
+                {renderLabel("iconPosition", "Icon Position")}
+                <CustomSelect
+                  value={getStyleValue("iconPosition") || "right"}
+                  onChange={(val) => handleStyleChange("iconPosition", val)}
+                  options={[
+                    { value: "left", label: "Left Side" },
+                    { value: "right", label: "Right Side" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-xs">
+              {renderLabel("hoverEffect", "Hover Animation")}
+              <CustomSelect
+                value={getStyleValue("hoverEffect") || "none"}
+                onChange={(val) => handleStyleChange("hoverEffect", val)}
+                options={[
+                  { value: "none", label: "Standard Opacity" },
+                  { value: "lift", label: "Elevate Up + Shadow" },
+                  { value: "scale", label: "Zoom Scale (103%)" },
+                  { value: "glow", label: "Glowing Halo Shadow" },
+                  { value: "shine", label: "Light Sheen Flash" },
+                ]}
+              />
             </div>
           </div>
         )}

@@ -19,7 +19,7 @@ export default function TypographySection({
   renderLabel,
 }: TypographySectionProps) {
   if (
-    !["headline", "subheading", "paragraph", "button", "blockquote"].includes(
+    !["headline", "subheading", "paragraph", "button", "blockquote", "list"].includes(
       selectedElement.type
     )
   ) {

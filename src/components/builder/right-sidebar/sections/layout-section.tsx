@@ -22,7 +22,7 @@ export default function LayoutSection({
   }
 
   return (
-    <div className="flex flex-col gap-sm border-t border-panel-border/40 pt-sm">
+    <div className="flex flex-col gap-sm">
       <span className="text-xs font-bold text-foreground">
         Container Layout Settings
       </span>

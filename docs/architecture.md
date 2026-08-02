@@ -25,7 +25,7 @@ This document details the architecture, file structure, code conventions, and ma
 25: │   │   ├── /builder                 # Drag & drop layout tree components
 26: │   │   │   ├── /right-sidebar       # Decomposed style, content, page settings, sections, and color-picker panels
 27: │   │   │   │   └── /sections        # Sub-inspector sections (layout, typography, spacing, appearance, SEO, theme)
-28: │   │   │   ├── canvas-selection-overlay.tsx # Extracted selection & hover overlay toolbar
+28: │   │   │   ├── canvas-selection-overlay.tsx # Extracted selection action toolbar & margin/padding indicator badge
 29: │   │   │   ├── header-viewport-controls.tsx # Breakpoint device view switcher
 30: │   │   │   └── header-action-buttons.tsx    # Header undo/redo, preview, and publish buttons
 31: │   │   └── /registry                # Static component registry elements and graphic mockups
@@ -98,8 +98,9 @@ sequenceDiagram
   channel.postMessage({ type: 'STATE_MUTATED', timestamp: Date.now() });
   ```
 - **KV Synchronizer**: Write drafts to Vercel KV using a 15-second interaction debounce. Implement `visibilitychange` and `beforeunload` events to trigger immediate, non-blocking synchronous flushes before the browser tab closes.
-- **Undo/Redo & Time-Travel Engine**: Maintains a chronological state history stack of visual mutations on the canvas. Supports global keyboard hotkeys (`Cmd/Ctrl + Z` for undo, `Cmd/Ctrl + Shift + Z` or `Cmd/Ctrl + Y` for redo) with automatic input-filtering overrides to prevent collisions during text editing. Diffs between successive state elements are compiled on-the-fly to generate descriptive labels (e.g., "Add headline", "Delete button", "Reorder Blocks") for chronological state time travel.
+- **Undo/Redo & Time-Travel Engine**: Maintains a chronological state history stack of visual mutations on the canvas. Supports global keyboard hotkeys (`Cmd/Ctrl + Z` for undo, `Cmd/Ctrl + Shift + Z` or `Cmd/Ctrl + Y` for redo) with automatic input-filtering overrides to prevent collisions during text editing. Exposes an `initializeHistory` hydration mechanism so that local storage state restoration and cross-tab BroadcastChannel events synchronize the history baseline state without destroying the undo history stack. Diffs between successive state elements are compiled on-the-fly to generate descriptive labels (e.g., "Add headline", "Delete button", "Reorder Blocks") for chronological state time travel.
 - **Device Style Breakpoint Overrides**: Merges nested styling overrides (`mobile` and `tablet` objects) dynamically on the client canvas depending on the active view size. At publish-time, the compiler maps these to media-query-wrapped CSS rules targeting element IDs, ensuring maximum specificity over Tailwind classes and base styles.
+- **Bullet List Data Model & Compilation**: Supports extended `styles` fields (`listStyleType`, `itemSpacing`, `markerColor`, `startNumber`) on `CanvasElement`. Uses `parseNestedListItems` and `serializeNestedListItems` to sync structured list item rows `{ id, text, level }` bi-directionally with serialized `content` strings. Employs `buildListTree` algorithm to construct semantic nested list trees (`<ul>`/`<ol>` inside `<li>` with standard `pl-6` padding) for both React canvas previews and static HTML exports, ensuring standard web list marker alignment and CSS `::marker` color propagation without misleading margin offsets.
 - **Component Tree Hierarchy**: Canvas elements may carry an optional display `name` and `parentId`. The Layers panel renders these relationships beneath a page root, keeps its selection synchronized with the canvas, and commits renaming, duplication, and sibling-only reordering through the same history stack. Deleting a parent removes its descendants to prevent orphaned nodes.
 
 ### C. Cloudflare R2 & Media Management

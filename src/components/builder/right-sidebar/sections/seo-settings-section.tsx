@@ -2,42 +2,61 @@
 
 import React from "react";
 import { PageSettings } from "@/types/builder";
+import SectionHeader, { OptionViewMode, renderSectionIcon } from "./section-header";
 
 interface SeoSettingsSectionProps {
   pageSettings: PageSettings;
   onUpdatePageSettings: (updates: Partial<PageSettings>) => void;
-  isExpanded: boolean;
-  onToggle: () => void;
+  isExpanded?: boolean;
+  onToggle?: () => void;
+  viewMode?: OptionViewMode;
 }
 
 export default function SeoSettingsSection({
   pageSettings,
   onUpdatePageSettings,
-  isExpanded,
-  onToggle,
+  isExpanded = true,
+  onToggle = () => {},
+  viewMode = "tabs",
 }: SeoSettingsSectionProps) {
-  return (
-    <div
-      className={`border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${
-        isExpanded ? "overflow-visible" : "overflow-hidden"
-      }`}
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-md text-xs font-bold text-foreground hover:bg-background/40 cursor-pointer transition-colors"
-      >
-        <div className="flex items-center gap-sm">
-          <span className="text-cyan-active">🌐</span>
-          <span>SEO & Metadata Settings</span>
-        </div>
-        <span className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}>
-          ▶
-        </span>
-      </button>
+  const containerClasses =
+    viewMode === "tabs"
+      ? "flex flex-col gap-md"
+      : viewMode === "glass"
+      ? `border border-panel-border/60 rounded-xl bg-background/20 transition-all duration-200 shrink-0 ${
+          isExpanded ? "overflow-visible shadow-sm border-cyan-active/30" : "overflow-hidden hover:border-panel-border"
+        }`
+      : `border-b border-panel-border/30 transition-all duration-200 shrink-0 ${
+          isExpanded ? "bg-panel/40" : ""
+        }`;
 
-      {isExpanded && (
-        <div className="p-md border-t border-panel-border/40 flex flex-col gap-md bg-panel/30 animate-slideDown">
+  return (
+    <div className={containerClasses}>
+      {viewMode !== "tabs" && (
+        <SectionHeader
+          title="SEO & Metadata"
+          subtitle="Page search tags & favicon"
+          icon="seo"
+          isExpanded={isExpanded}
+          onToggle={onToggle}
+          viewMode={viewMode}
+        />
+      )}
+
+      {(isExpanded || viewMode === "tabs") && (
+        <div className={`flex flex-col gap-md animate-slideDown ${viewMode !== "tabs" ? "p-md border-t border-panel-border/20 bg-panel/30" : ""}`}>
+          {viewMode === "tabs" && (
+            <div className="flex flex-col gap-[2px] pb-xs border-b border-panel-border/30">
+              <div className="flex items-center gap-xs">
+                <div className="p-xs rounded-lg bg-cyan-active/10 text-cyan-active shrink-0">
+                  {renderSectionIcon("seo")}
+                </div>
+                <h3 className="text-xs font-bold text-foreground">SEO & Metadata Settings</h3>
+              </div>
+              <p className="text-[10px] text-text-muted mt-[2px]">Configure search engine meta tags and page favicon URL.</p>
+            </div>
+          )}
+
           <div className="flex flex-col gap-xs">
             <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
               SEO Title

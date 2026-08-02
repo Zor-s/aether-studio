@@ -133,35 +133,35 @@ export default function DocsClient({ documents }: DocsClientProps) {
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-deep-teal/15 blur-[150px] pointer-events-none" />
 
       {/* Navbar Header */}
-      <header className="h-header-h border-b border-panel-border bg-panel/60 backdrop-blur-md flex items-center justify-between px-md md:px-xl shrink-0 select-none z-30 sticky top-0">
+      <header className="h-header-h border-b border-panel-border bg-panel/60 backdrop-blur-md flex items-center justify-between px-sm sm:px-md md:px-xl shrink-0 select-none z-30 sticky top-0">
         <div className="flex items-center gap-xs">
-          <Link href="/" className="flex items-center gap-xs focus:outline-none">
+          <Link href="/" className="flex items-center gap-xs focus:outline-none shrink-0">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-deep-teal to-cyan-active flex items-center justify-center shadow-md">
               <span className="text-white font-bold text-lg select-none">Æ</span>
             </div>
           </Link>
           <div>
-            <h1 className="text-md font-bold tracking-tight text-foreground leading-snug">Aether Portal</h1>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-[4px] font-semibold">Dev Docs Hub</p>
+            <h1 className="text-sm sm:text-md font-bold tracking-tight text-foreground leading-snug">Aether Portal</h1>
+            <p className="text-[9px] sm:text-[10px] text-text-muted uppercase tracking-widest mt-[2px] font-semibold">Dev Docs Hub</p>
           </div>
         </div>
 
-        <nav className="flex items-center gap-sm md:gap-md">
+        <nav className="flex items-center gap-xs sm:gap-sm md:gap-md">
           <Link
             href="/"
-            className="text-xs font-semibold text-text-muted hover:text-cyan-active transition-colors duration-200 px-sm py-[8px] rounded-lg hover:bg-accent-soft"
+            className="text-[11px] sm:text-xs font-semibold text-text-muted hover:text-cyan-active transition-colors duration-200 px-xs sm:px-sm py-1.5 rounded-lg hover:bg-accent-soft"
           >
             Home
           </Link>
           <Link
             href="/about"
-            className="text-xs font-semibold text-text-muted hover:text-cyan-active transition-colors duration-200 px-sm py-[8px] rounded-lg hover:bg-accent-soft"
+            className="text-[11px] sm:text-xs font-semibold text-text-muted hover:text-cyan-active transition-colors duration-200 px-xs sm:px-sm py-1.5 rounded-lg hover:bg-accent-soft"
           >
             Architecture
           </Link>
           <Link
             href="/dashboard"
-            className="text-xs font-bold text-white bg-cyan-active hover:bg-cyan-active/90 px-md py-[10px] rounded-lg shadow-md shadow-cyan-active/20 hover:shadow-cyan-active/30 active:scale-95 transition-all duration-200"
+            className="text-[11px] sm:text-xs font-bold text-white bg-cyan-active hover:bg-cyan-active/90 px-2 sm:px-md py-2 rounded-lg shadow-md shadow-cyan-active/20 hover:shadow-cyan-active/30 active:scale-95 transition-all duration-200"
           >
             Launch Builder
           </Link>

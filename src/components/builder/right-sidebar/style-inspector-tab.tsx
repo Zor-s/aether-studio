@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { CanvasElement, PageSettings } from "@/types/builder";
 import SpacingSection from "./sections/spacing-section";
 import LayoutSection from "./sections/layout-section";
@@ -15,6 +15,8 @@ interface StyleInspectorTabProps {
   onShowToast?: (message: string, type: "success" | "warning" | "info") => void;
 }
 
+type StyleSubTab = "spacing" | "layout" | "typography" | "appearance";
+
 export default function StyleInspectorTab({
   activeDevice,
   selectedElement,
@@ -22,6 +24,8 @@ export default function StyleInspectorTab({
   pageSettings,
   onShowToast,
 }: StyleInspectorTabProps) {
+  const [activeSubTab, setActiveSubTab] = useState<StyleSubTab>("spacing");
+
   const themePalette = pageSettings.themePalette || {
     iceBlue: "#d4f0fc",
     skyBlue: "#89d6fb",
@@ -30,17 +34,29 @@ export default function StyleInspectorTab({
     darkSlate: "#01303f",
   };
 
+  const hasLayout = ["section", "container", "grid-2"].includes(selectedElement.type);
+  const hasTypography = ["headline", "subheading", "paragraph", "button", "blockquote", "list"].includes(selectedElement.type);
+
+  // Auto-switch to available tab if element doesn't support the active tab
+  useEffect(() => {
+    if (activeSubTab === "layout" && !hasLayout) {
+      setActiveSubTab("spacing");
+    } else if (activeSubTab === "typography" && !hasTypography) {
+      setActiveSubTab("spacing");
+    }
+  }, [selectedElement.id, selectedElement.type, hasLayout, hasTypography, activeSubTab]);
+
   const getStyleValue = (
     key: Exclude<keyof NonNullable<CanvasElement["styles"]>, "mobile" | "tablet">
-  ) => {
+  ): string => {
     const s = selectedElement.styles || {};
-    if (activeDevice === "mobile") {
-      return s.mobile?.[key] !== undefined ? s.mobile[key] : s[key] || "";
+    if (activeDevice === "mobile" && s.mobile?.[key] !== undefined) {
+      return String(s.mobile[key]);
     }
-    if (activeDevice === "tablet") {
-      return s.tablet?.[key] !== undefined ? s.tablet[key] : s[key] || "";
+    if (activeDevice === "tablet" && s.tablet?.[key] !== undefined) {
+      return String(s.tablet[key]);
     }
-    return s[key] || "";
+    return s[key] !== undefined ? String(s[key]) : "";
   };
 
   const isOverridden = (
@@ -153,10 +169,73 @@ export default function StyleInspectorTab({
     );
   };
 
+  const tabsConfig = [
+    {
+      id: "spacing" as const,
+      label: "Spacing",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+          />
+        </svg>
+      ),
+      show: true,
+    },
+    {
+      id: "layout" as const,
+      label: "Layout",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+          />
+        </svg>
+      ),
+      show: hasLayout,
+    },
+    {
+      id: "typography" as const,
+      label: "Type",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 21h10M12 3v18M9 7L12 3l3 4"
+          />
+        </svg>
+      ),
+      show: hasTypography,
+    },
+    {
+      id: "appearance" as const,
+      label: "Style",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+          />
+        </svg>
+      ),
+      show: true,
+    },
+  ].filter((t) => t.show);
+
   return (
-    <div className="flex flex-col gap-lg">
+    <div className="flex flex-col gap-md">
       {activeDevice !== "desktop" && (
-        <div className="p-xs px-sm rounded-lg bg-cyan-active/10 border border-cyan-active/20 text-[10px] text-cyan-active font-semibold flex items-center gap-xs mb-sm animate-fadeIn">
+        <div className="p-xs px-sm rounded-lg bg-cyan-active/10 border border-cyan-active/20 text-[10px] text-cyan-active font-semibold flex items-center gap-xs mb-xs animate-fadeIn">
           <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
@@ -169,33 +248,63 @@ export default function StyleInspectorTab({
         </div>
       )}
 
-      <SpacingSection
-        getStyleValue={getStyleValue}
-        handleStyleChange={handleStyleChange}
-        renderLabel={renderLabel}
-      />
+      {/* Sub-Tab Navigation Bar for Component Style Options */}
+      <div className="flex border-b border-panel-border/40 bg-background/30 p-xs gap-[4px] rounded-lg border border-panel-border/40">
+        {tabsConfig.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveSubTab(tab.id)}
+            className={`flex-1 flex flex-col items-center justify-center py-xs px-[4px] rounded-md text-[10px] font-semibold transition-all duration-200 cursor-pointer ${
+              activeSubTab === tab.id
+                ? "bg-cyan-active text-white font-bold shadow-sm"
+                : "text-text-muted hover:text-foreground hover:bg-background/40"
+            }`}
+          >
+            <div className="mb-[2px]">{tab.icon}</div>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
 
-      <LayoutSection
-        selectedElement={selectedElement}
-        getStyleValue={getStyleValue}
-        handleStyleChange={handleStyleChange}
-        renderLabel={renderLabel}
-      />
+      {/* Options Panel Container */}
+      <div className="animate-slideDown">
+        {activeSubTab === "spacing" && (
+          <SpacingSection
+            getStyleValue={getStyleValue}
+            handleStyleChange={handleStyleChange}
+            renderLabel={renderLabel}
+          />
+        )}
 
-      <TypographySection
-        selectedElement={selectedElement}
-        getStyleValue={getStyleValue}
-        handleStyleChange={handleStyleChange}
-        renderLabel={renderLabel}
-      />
+        {activeSubTab === "layout" && hasLayout && (
+          <LayoutSection
+            selectedElement={selectedElement}
+            getStyleValue={getStyleValue}
+            handleStyleChange={handleStyleChange}
+            renderLabel={renderLabel}
+          />
+        )}
 
-      <AppearanceSection
-        selectedElement={selectedElement}
-        getStyleValue={getStyleValue}
-        handleStyleChange={handleStyleChange}
-        renderLabel={renderLabel}
-        themePalette={themePalette}
-      />
+        {activeSubTab === "typography" && hasTypography && (
+          <TypographySection
+            selectedElement={selectedElement}
+            getStyleValue={getStyleValue}
+            handleStyleChange={handleStyleChange}
+            renderLabel={renderLabel}
+          />
+        )}
+
+        {activeSubTab === "appearance" && (
+          <AppearanceSection
+            selectedElement={selectedElement}
+            getStyleValue={getStyleValue}
+            handleStyleChange={handleStyleChange}
+            renderLabel={renderLabel}
+            themePalette={themePalette}
+          />
+        )}
+      </div>
     </div>
   );
 }

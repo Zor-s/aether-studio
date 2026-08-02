@@ -6,6 +6,136 @@ import {
   LAYOUT_ELEMENT_TYPES,
 } from "./style-maps";
 
+export const ORDERED_LIST_TYPES = new Set([
+  "decimal",
+  "decimal-leading-zero",
+  "lower-alpha",
+  "upper-alpha",
+  "lower-roman",
+  "upper-roman",
+]);
+
+export function isOrderedListType(type?: string): boolean {
+  return !!type && ORDERED_LIST_TYPES.has(type);
+}
+
+export function formatHref(link?: string): string {
+  if (!link || !link.trim()) return "#";
+  const trimmed = link.trim();
+  if (trimmed.match(/^(https?:\/\/|\/|#|mailto:|tel:)/i)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+}
+
+export interface NestedListItem {
+  text: string;
+  level: number;
+}
+
+export function parseNestedListItems(content: string): NestedListItem[] {
+  if (content === undefined || content === null) return [];
+  const lines = content.split("\n");
+  const result: NestedListItem[] = [];
+  let prevLevel = 0;
+
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
+
+    let indentCount = 0;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === "\t") {
+        indentCount += 2;
+      } else if (char === " ") {
+        indentCount += 1;
+      } else {
+        break;
+      }
+    }
+
+    const rawLevel = Math.floor(indentCount / 2);
+    const clampedLevel = idx === 0 ? 0 : Math.min(rawLevel, prevLevel + 1);
+    const level = Math.max(0, clampedLevel);
+
+    result.push({
+      text: line.trim(),
+      level,
+    });
+    prevLevel = level;
+  }
+
+  return result;
+}
+
+export function normalizeItemLevels(items: NestedListItem[]): NestedListItem[] {
+  if (items.length === 0) return [];
+  let prevLevel = 0;
+  return items.map((item, idx) => {
+    const rawLevel = Math.max(0, item.level);
+    const clampedLevel = idx === 0 ? 0 : Math.min(rawLevel, prevLevel + 1);
+    prevLevel = clampedLevel;
+    return {
+      ...item,
+      level: clampedLevel,
+    };
+  });
+}
+
+export function serializeNestedListItems(items: NestedListItem[]): string {
+  const normalized = normalizeItemLevels(items);
+  return normalized
+    .map((item) => `${"  ".repeat(item.level)}${item.text}`)
+    .join("\n");
+}
+
+export interface ListNode {
+  text: string;
+  level: number;
+  children: ListNode[];
+}
+
+export function buildListTree(items: NestedListItem[]): ListNode[] {
+  const normalized = normalizeItemLevels(items);
+  const root: ListNode[] = [];
+  const stack: { node: ListNode; level: number }[] = [];
+
+  for (const item of normalized) {
+    const newNode: ListNode = {
+      text: item.text,
+      level: item.level,
+      children: [],
+    };
+
+    while (stack.length > 0 && stack[stack.length - 1].level >= item.level) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      root.push(newNode);
+    } else {
+      stack[stack.length - 1].node.children.push(newNode);
+    }
+
+    stack.push({ node: newNode, level: item.level });
+  }
+
+  return root;
+}
+
+export function getNestedMarkerType(rootType: string, level: number): string {
+  if (level === 0) return rootType || "disc";
+  if (rootType === "checkmark" || rootType === "dash" || rootType === "none") return rootType;
+
+  if (isOrderedListType(rootType)) {
+    if (level === 1) return "lower-alpha";
+    return "lower-roman";
+  }
+
+  if (level === 1) return rootType === "circle" ? "square" : "circle";
+  return "square";
+}
+
 export const getResolvedStyles = (
   el: CanvasElement,
   activeDevice: "desktop" | "tablet" | "mobile"
@@ -22,6 +152,8 @@ export const mapColor = (
 ) => {
   if (!colorVal) return colorVal;
   const val = colorVal.toLowerCase().trim();
+
+  if (val.startsWith("var(")) return colorVal;
 
   if (palette) {
     if (palette.iceBlue   && val === palette.iceBlue.toLowerCase().trim())   return "var(--brand-ice-blue)";
@@ -51,6 +183,22 @@ const SPACE_CLASS_SUFFIX: Record<string, string> = {
   "space-xl":   "xl",
   "space-2xl":  "2xl",
 };
+
+export function formatSpaceDisplay(spaceToken?: string): string {
+  if (!spaceToken || spaceToken === "space-none") return "0px";
+  const name = spaceToken.replace("space-", "");
+  const pxMap: Record<string, string> = {
+    none: "0px",
+    xs: "4px",
+    sm: "8px",
+    md: "16px",
+    lg: "24px",
+    xl: "32px",
+    "2xl": "48px",
+  };
+  return pxMap[name] ? `${name} (${pxMap[name]})` : name;
+}
+
 
 export const getStyleClasses = (
   el: CanvasElement,

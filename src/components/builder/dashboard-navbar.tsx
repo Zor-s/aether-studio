@@ -46,7 +46,7 @@ export default function DashboardNavbar({ isOpen, onClose, children }: Dashboard
 
       {/* Slide-over panel drawer */}
       <div
-        className={`fixed inset-y-0 left-0 w-80 bg-panel border-r border-panel-border z-50 shadow-2xl flex flex-col md:hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 w-[280px] sm:w-80 max-w-[85vw] bg-panel border-r border-panel-border z-50 shadow-2xl flex flex-col md:hidden transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

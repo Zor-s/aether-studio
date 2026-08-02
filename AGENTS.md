@@ -5,5 +5,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 Additionally, read the project's own documentation in the `docs/` directory to understand its specific architecture, design patterns, and layout.
 
-For every change to the codebase, you must update the documentation in the `docs/` directory first before making any modifications to the code. Specifically, when completing a task, you must update the documentation in the `docs/` directory to reflect the changes before moving on to any subsequent tasks.
+For every change to the codebase, you must update the documentation in the `docs/` directory after all of the implementation is complete to reflect the changes.
+
+Whenever coding any changes, always check for and handle edge cases.
 <!-- END:nextjs-agent-rules -->

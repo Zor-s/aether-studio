@@ -104,7 +104,7 @@ Aether Studio supports page-level style overrides and layout alignment configura
 
 1. **Global Canvas Styles**:
    - **`fontFamily`**: Sets the global font for the body element (searchable from the Google Fonts API registry).
-   - **`backgroundColor`**: Configures the overall page backdrop fill (HEX or theme swatch color variable).
+   - **`backgroundColor`**: Configures the overall page backdrop fill (defaults to white `#ffffff`, customizable via HEX or theme swatch color variable).
    - **`textColor`**: Overrides the base typography text color.
 
 2. **Container Sizing & Spacing**:
@@ -115,6 +115,10 @@ Aether Studio supports page-level style overrides and layout alignment configura
      - `full`: Sets layout container to span `100%` width.
    - **`padding`**: Sets the outer body spacing margins surrounding the main layout container (options map to spacing tokens: `space-none` to `space-2xl`).
    - **`gap`**: Defines the sibling vertical margins between root elements (options map to spacing tokens: `space-none` to `space-2xl`).
+
+3. **Page Settings & Component Inspector Sub-Tab Layout**:
+   - **Sub-Tab Navigation Bar**: Both global Page Settings and component-level Style Inspector panels feature sub-tab navigation bars (`Spacing`, `Layout`, `Type`, `Style`), allowing builders to switch between option categories in a clean, non-collapsible 1-click tabbed layout.
+   - **Dynamic Tab Filtering**: Component inspectors automatically filter available sub-tabs based on the selected element type (e.g. `Layout` shows for section/container/grid blocks; `Type` shows for headline/subheading/paragraph/button/blockquote/list blocks). All underlying style logic, device overrides, and color pickers remain 100% synchronized.
 
 ---
 
@@ -193,10 +197,11 @@ Since Aether Studio is an edge-optimized dashboard and canvas creator, the layou
 | **Desktop** | `> 1024px` | Dual-sidebar layout locked to maximum screen height. Canvas expands to fill the middle space. |
 
 ### B. The Canvas Frame (Responsive Preview Engine)
-To give builders live visual feedback on mobile devices without relying on browser resizing, the middle editor canvas will render the generated Rose Tree inside an iframe enclosed in a device wrapper:
-- **Mobile Mode**: Iframe wrapper width locked to `375px` (iPhone width), centered with a drop shadow.
-- **Tablet Mode**: Iframe wrapper width locked to `768px` (iPad width).
-- **Desktop Mode**: Iframe wrapper width set to `100%` width.
+To give builders live visual feedback on mobile, tablet, and desktop devices without relying on browser window resizing, the middle editor canvas renders the generated HTML document inside an iframe enclosed in a device wrapper:
+- **Desktop Mode**: Features a desktop PC monitor frame bezel (`border-[6px] sm:border-[10px] border-dark-slate rounded-2xl shadow-2xl`) complete with a browser window header bar displaying window control buttons (red, yellow, green) and a mock URL location field (`https://workspace.aether.studio/desktop-preview`). In preview mode, redundant outer canvas padding is removed (`p-0`), and the iframe height dynamically auto-measures to the document content scroll height (`doc.body.scrollHeight`), rendering full visual quality without 150px height collapse.
+- **Tablet Mode**: Iframe wrapper width locked to `768px` (iPad width), centered with a device drop shadow and camera bezel. In preview mode, content scrolls smoothly inside the tablet frame.
+- **Mobile Mode**: Iframe wrapper width locked to `375px` (iPhone width), centered with a smartphone frame and top notch speaker grille. In preview mode, content scrolls smoothly inside the smartphone frame.
+- **Live Preview Viewport Switcher**: In Live Interactive Preview Mode, the header viewport control bar displays a pulsing live preview status indicator (`Live Interactive Preview Mode`) alongside desktop, tablet, and mobile viewport buttons, enabling real-time device switching during interactive preview sessions.
 
 ### C. Device-Specific Style Breakpoint Overrides
 To give builders total control over their portfolio layout scaling, Aether Studio supports device-specific styling overrides.
@@ -210,6 +215,18 @@ To give builders total control over their portfolio layout scaling, Aether Studi
    - Any property containing an override displays with a highlighted label.
    - A **Reset** control appears next to overridden properties to let the builder clear the override and inherit the desktop value again.
 4. **Edge Compiler Specificity:** The HTML compiler maps active styling overrides (including margins, paddings, borders, colors, and typography) to media-query-wrapped CSS rules targeting unique element IDs (e.g. `#el-id`). This guarantees the overrides take precedence over base inline styles and Tailwind utility classes.
+
+### D. Mobile Viewport Switching & Horizontal Canvas Scrolling
+To allow builders on physical mobile devices (e.g. smartphones < 768px wide) to accurately test and view larger screen sizes (Desktop and Tablet viewports):
+1. **Header Action Controls**: On mobile screens (`< 640px`), action button text labels (`Preview`, `Edit Page`, and `Publish`) collapse automatically into compact icon buttons with accessible tooltips and titles. Full text labels restore dynamically on desktop viewports (`sm:` and above).
+2. **Compact Viewport Switcher & Status Pill**: Viewport switcher buttons (`Desktop`, `Tablet`, `Mobile`) and cloud save status indicators adjust padding (`px-1.5 py-1`) and icon sizes on mobile screens to preserve top header clearance.
+3. **True Resolution Viewport Switching on Mobile Devices**:
+   - **Desktop Viewport**: Enforces `min-w-[1024px]` on mobile devices so the canvas renders the genuine desktop layout (2-column grids, desktop navigation, desktop typography) instead of collapsing into a phone width.
+   - **Tablet Viewport**: Enforces `min-w-[768px] w-[768px]` so the canvas renders the true tablet layout.
+   - **Mobile Viewport**: Uses `w-[375px] max-w-full` for standard smartphone previewing.
+4. **Horizontal Scroll Engine**: The outer workspace canvas wrapper provides smooth horizontal scrolling (`overflow-x-auto custom-scrollbar`) aligned to `justify-start` on mobile viewports. This enables builders to swipe horizontally across full desktop (1024px) or tablet (768px) visual layouts on any smartphone.
+5. **Single Scrollbar Architecture (Inner Frame Isolation)**: To eliminate double scrollbars, the outer workspace background locks vertical scrolling (`overflow-y-hidden`). Vertical scrolling is isolated exclusively to the inner device frame container (`flex-1 min-h-0 overflow-y-auto custom-scrollbar`), ensuring clean, single-scrollbar scrolling across all device viewports.
+6. **Slide-Out Sheet Drawer**: The mobile drawer panel calculates width using `w-[280px] sm:w-80 max-w-[85vw]`, guaranteeing a responsive drawer width across all smartphone screen sizes.
 
 ---
 
@@ -249,8 +266,8 @@ src/
 ### A. Consistency Rules (Guarding Layout Quality)
 1. **Layout Wrapper Limits**: Always use `flex flex-col h-screen overflow-hidden` on the main page to freeze page-scroll and keep sidebars locked while the canvas handles its own scrolling.
 2. **Interactive States**: Every button or selection block must transition using `transition-all duration-200 ease-in-out` with subtle scale highlights or background shifts.
-3. **Outline States**: Elements inside the canvas must render a thin, dotted Sky Blue outline (`border border-dashed border-sky-blue`) during editing that changes to a solid Primary Cyan border when selected.
-4. **History Stack Dropdown**: Integrated directly into the top header navbar adjacent to the Undo/Redo buttons. Renders a compact state selector pill (`History (X/Y)`) that opens an overlay dropdown menu containing scrollable time-travel steps dynamically labeled based on elements added, deleted, edited, or reordered.
+3. **Outline States & Outside Spacing Indicators**: Elements inside the canvas render a precise 1px dashed Primary Cyan inset outline (`outline outline-1 outline-dashed outline-cyan-active/70 -outline-offset-1`) during editing hover that transitions seamlessly to a 2px solid Primary Cyan inset border (`outline outline-2 outline-cyan-active -outline-offset-2`) when selected. Utilizing inset offsets (`-outline-offset-2` and `-outline-offset-1`) guarantees the outlines sit inside the element's border-box perimeter, ensuring 100% visible focus borders without size discrepancies, guideline clutter, or outline clipping under `overflow-hidden` containers or zero-padding/margin configurations. Both hover and selection overlays display an attached indicator badge detailing the element type alongside its configured margin and padding (e.g. `M: md (16px) • P: sm (8px)`). The indicator badge and action toolbar strictly render **outside** the element box—positioned 8px above the top border (`-top-8`) by default, or dynamically flipping 4px below the bottom border (`top-full mt-1.5`) when an element sits flush against the topmost canvas edge (`isTopEdge`). This guarantees 100% badge visibility without obscuring text inside the element or adding fake padding to the canvas.
+4. **History Stack Dropdown**: Integrated directly into the top header navbar adjacent to the Undo/Redo buttons. Renders a compact state selector pill (`History (X/Y)`) that stays visible across all history stack lengths and opens an overlay dropdown menu containing scrollable time-travel steps dynamically labeled based on elements added, deleted, edited, or reordered. Automatically synchronized during `localStorage` hydration and `BroadcastChannel` multi-tab state sync.
 5. **Left Sidebar Hover Previews**: Hovering any registry element card triggers a floating preview popover adjacent to the sidebar (`left-full ml-sm w-[280px]`). The popover uses the `animate-scaleIn` entry transition and centers its `top` position relative to the hovered item, clamped dynamically to remain within the visible vertical container height. It renders specific HTML mockups with custom, theme-compliant CSS keyframe animations.
 6. **Layers Panel**: The sidebar's Layers toggle exposes a page-root tree. Selecting a node selects its canvas element; nodes can be renamed, duplicated, and moved relative to siblings. Parent-child relationships use `parentId`, and expandable rows expose nested structures when present.
 7. **Custom Style Dropdowns**: To prevent native OS select element rendering glitches under browser zoom-out levels, and to maintain theme-palette compliance across dark/light modes, all styling selection controls in the sidebar must utilize custom DOM dropdown menus (`CustomSelect`) with absolute-positioned panels, full-screen backdrop click overlays for close handling, and dynamic viewport-based upward/downward positioning to prevent options list clipping when space below is limited.
@@ -326,6 +343,7 @@ To ensure structural visibility while building without affecting production CSS/
 To guarantee builder stability and compiled page security under nested layout operations, dynamic custom inputs, and local state persistence, the system implements the following defensive coding constraints:
 
 ### A. LocalStorage & Multi-Tab State Integrity
+- **SSR-Hydration Safety for LocalStorage**: Never evaluate `localStorage` inside `useState` initializers using `typeof window !== "undefined"` checks, as this causes server/client hydration mismatches (server renders `false` while client renders `true`). Instead, initialize component state to a deterministic default (matching SSR output) and synchronize `localStorage` state inside a post-hydration `useEffect` hook.
 - **Nested Merging**: When recovering state configurations (`PageSettings`) from `localStorage` or tab-to-tab synchronization (`BroadcastChannel`), the merging logic must perform deep/nested merging on sub-objects (like `themePalette`). Shallow spreads of parent objects are banned to prevent older/partial configuration datasets from corrupting nested palette fields with `undefined` values.
 - **Array Verification**: Any canvas tree JSON loaded from local storage must be explicitly validated as an array prior to updating React state to prevent parsing errors/malformed objects from crashing the tree hierarchy.
 
@@ -361,18 +379,77 @@ To guarantee builder stability and compiled page security under nested layout op
 - **Subheading Component (`h3`)**: If a custom font weight or letter spacing is configured, omit the default `font-semibold` or `tracking-tight` class from the `h3` tag.
 - **Paragraph Component (`p`)**: If a custom font weight is configured, omit the default `font-medium` class from the `p` tag.
 - **Blockquote Component (`blockquote`)**: If a custom font weight is configured, omit the default `font-medium` class from the `blockquote` tag.
-- **Blockquote Bounding Box Borders**: The standard border options (`borderStyle`, `borderWidth`, and `borderColor`) apply to the component's bounding box wrapper, allowing the creation of card border outlines around the testimonial block.
-- **Quote Accent Highlight Line**: A dedicated setting (`quoteLineColor`) controls the color of the vertical left highlight accent line (labeled as "Accent Line Color"). To prevent the highlight line from overlapping with the component's rounded borders or outer edges, it is rendered as an absolute-positioned vertical bar (`span`) inset dynamically by the active padding value, ensuring a clean, bounded presentation inside the blockquote card.
-- **Blockquote Custom Background Color**: A custom background color (`backgroundColor`) option is available for the blockquote component. When configured, it overrides the default variant-specific background colors.
-- **Theme-Aware Default Colors**: When creating new elements (Blockquote, Button, Divider, Headline, Paragraph, Subheading, List), defaults for `color`, `borderColor`, and `quoteLineColor` are initialized dynamically using the active theme's palette variables (e.g. `cyanActive`, `deepTeal`, `darkSlate`) rather than static default hex strings.
+- **Blockquote Bounding Box Borders**: The standard border options (`borderStyle`, `borderWidth`, and `borderColor`) apply to the component's bounding box wrapper when configured, allowing builders to create card border outlines around the testimonial block if desired. By default, no outer card borders or rounded corner outlines are applied.
+- **Quote Accent Highlight Line**: A dedicated setting (`quoteLineColor`) controls the color of the vertical left highlight accent line (labeled as "Accent Line Color"). It renders as an absolute-positioned vertical bar (`span`) inset dynamically by the active padding value, ensuring a clean presentation.
+- **Blockquote Custom Background Color**: A custom background color (`backgroundColor`) option is available for the blockquote component. When configured, it applies a background fill to the blockquote wrapper; by default, blockquotes remain transparent unless a background color is explicitly set.
+- **Theme-Aware Default Colors**: When creating new elements (Blockquote, Button, Divider, Headline, Paragraph, Subheading, List), defaults for `color`, `borderColor`, and `quoteLineColor` are initialized dynamically using CSS variable bindings for the active theme's palette tokens (`var(--brand-dark-slate)`, `var(--brand-deep-teal)`, `var(--brand-cyan-active)`) rather than static default hex strings. This ensures elements like the Large Headline remain dynamically bound to the active theme by default whenever the theme preset or theme palette is updated.
 - **Blockquote Layout Variants (`quoteVariant`)**: Supports four unique presentation layouts translated directly by the compiler into semantic HTML configurations with integrated theme-palette variables:
-  - **Classic**: Features a thick left line accent inset by padding, paired with a soft background backing (`bg-accent-soft/10` when no custom background color is set) and right-rounded corners (`rounded-r-xl`).
-  - **Callout**: Renders a centered, fully rounded card (`rounded-2xl`) with glassmorphic backing (`bg-accent-soft/15` when no custom background color is set, plus shadow-sm and border border-panel-border/30) and a large decorative top-left quotation watermark mark.
+  - **Classic**: Features a thick left line accent inset by padding. Clean and transparent by default with no card outline unless custom background/border styles are configured.
+  - **Callout**: Renders a centered layout with a large decorative quotation watermark mark. Transparent by default unless custom background/border styles are configured.
   - **Elegant**: A borderless minimalist layout showcasing balanced top and bottom hanging quotation marks (`text-5xl text-cyan-active/60 font-serif`).
-  - **Banner**: A horizontal band layout framed with top and bottom borders (2px solid) using the custom `quoteLineColor`, set on a soft colored background (`bg-accent-soft/5` when no custom background color is set).
+  - **Banner**: A horizontal band layout framed with top and bottom borders (2px solid) using the custom `quoteLineColor`. Transparent by default unless a custom background color is configured.
 - **Canvas-Compiler Styling Synchronization**: To prevent visual discrepancies in layout containers and ensure unified selection outlines, the canvas workspace wrapper `div` handles all custom outer styles (borders, border-radius, background) for blockquotes, matching other blocks. The inner `<blockquote>` element renders the variant-specific decoration layout (such as highlight lines or quote watermarks) relative to the wrapper's padding-inset content area. In compiled outputs, these outer properties (background, border, border-radius, padding) and the inset offset are compiled directly onto the single semantic `<blockquote>` tag, maintaining perfect visual parity.
 
+### G. Bullet List Component (`list`) Options & Inner Nested Bullets Architecture
+To support flexible document lists, nested outline hierarchies, feature checklists, and numbered procedures, the Bullet List component (`type: "list"`) provides comprehensive style options and an automated nested bullet engine:
+1. **List Marker Types (`listStyleType`)**:
+   - **Unordered Lists (`<ul>`)**: `disc` (Solid Bullet), `circle` (Hollow Circle), `square` (Solid Square), `checkmark` (Checkmark Icon `✓`), `dash` (Hyphen `-`), `none` (Plain unstyled).
+   - **Ordered Lists (`<ol>`)**: `decimal` (1, 2, 3), `decimal-leading-zero` (01, 02, 03), `lower-alpha` (a, b, c), `upper-alpha` (A, B, C), `lower-roman` (i, ii, iii), `upper-roman` (I, II, III).
+2. **Structured Interactive List Item Manager (`level 0-2+`)**:
+   - The Content Inspector features a Notion / Google Docs style visual list manager where each item renders as an interactive row with tree guide accents (`border-l-2`) and level badges (`L0`, `L1`, `L2`).
+   - **Fixed Action Column & Direct Controls**: Action buttons (`← Outdent`, `→ Indent`, `↑ Move Up`, `↓ Move Down`, `🗑 Delete`) remain anchored in a fixed right-hand column so inspector controls stay perfectly aligned across all nesting depths without misleading margin shifts.
+   - **Keyboard Navigation & Shortcuts**: Supports `Enter` (creates new item below at current level with instant auto-focus), `Tab` (indents item), `Shift+Tab` (outdents item), and `Backspace` on empty input (outdents/deletes item).
+   - **Empty-Line State Retention**: Parser (`parseNestedListItems`) preserves empty lines during editing so clicking `+ Add Main Item` or `+ Add Sub-Bullet` creates a responsive new row without transient item filtering bugs.
+   - **Dual-Mode Editor**: Seamlessly toggles between `Structured Rows` mode and `Bulk Text` mode, keeping item structures and plain text strings synchronized in real time.
+3. **Semantic Sub-List DOM Tree Nesting**:
+   - Sub-lists are rendered as semantic nested `<ul class="pl-6">` or `<ol class="pl-6">` elements nested directly inside parent `<li>` nodes using tree algorithm `buildListTree`.
+   - Replaces flat item margin offsets with standard HTML list padding (`pl-6` / `1.5rem`) so bullet markers and text align accurately across all levels on canvas preview and compiled static HTML.
+   - For unordered lists, sub-bullets automatically progress in shape marker hierarchy: Level 0 (`disc` `•`) → Level 1 (`circle` `◦`) → Level 2+ (`square` `▪`).
+   - For ordered lists, sub-bullets automatically progress in numbering style: Level 0 (`decimal` `1.`) → Level 1 (`lower-alpha` `a.`) → Level 2+ (`lower-roman` `i.`).
+3. **Item Vertical Spacing (`itemSpacing`)**: Configurable gap between list items (`space-none` 0px, `space-xs` 4px, `space-sm` 8px, `space-md` 16px, `space-lg` 24px).
+4. **Independent Marker Color (`markerColor`)**: Custom accent color specifically for bullet points or list numbers across all nested levels (e.g. Primary Cyan `#02a9f7`), allowing markers to stand out while item copy inherits `color`.
+5. **Ordered List Starting Index (`startNumber`)**: Configures the starting number for root `<ol>` elements (`start="N"`).
+6. **Typography Integration**: List elements participate in full typography styling (Font Family, Font Size, Text Alignment, Font Weight, Letter Spacing).
+7. **Line Split & Special Character Hardening**: Splitting of content lines handles indentation levels, preserves special characters, avoids empty list item collapse, and outputs identical nested markup between interactive canvas renders and exported static HTML.
 
 - **Consistency across Preview and Compiler**: The conditional logic must be implemented in both the builder workspace canvas (`workspace-canvas.tsx`) and the edge page compiler (`compiler.ts`) to maintain perfect WYSIWYG synchronization.
+
+### H. Action Button Component (`button`) Architecture, Options & Defensive Controls
+To support call-to-action buttons, link destinations, brand buttons, and interactive triggers, the Action Button component (`type: "button"`) features comprehensive options, visual variants, responsive overrides, and edge-case handling:
+1. **Link Destination Target (`linkTarget`)**:
+   - `_self` (Same Tab - default): Opens the target URL in the active tab.
+   - `_blank` (New Window/Tab): Opens target URL in a new browser tab with defensive security attributes (`target="_blank" rel="noopener noreferrer"`).
+2. **Button Visual Variants (`buttonVariant`)**:
+   - `solid` (default): Filled background matching accent `color` with contrast-calculated text color.
+   - `outline`: Transparent background with crisp solid border and text colored with accent `color`.
+   - `ghost`: Completely transparent background and no border until hovered, using accent `color` text.
+   - `soft`: Soft semi-transparent background fill (`var(--accent-soft)` / `cyanActive/15`) with bold accent text.
+   - `glass`: Modern glassmorphic style with backdrop blur (`backdrop-blur-md`), semi-transparent background, and glowing border.
+3. **Button Sizing Scale (`buttonSize`)**:
+   - `sm`: Small height & padding (`px-3 h-8 text-xs`).
+   - `md` (default): Standard height & padding (`px-6 h-10 text-xs`).
+   - `lg`: Large height & padding (`px-8 h-12 text-sm`).
+   - `xl`: Extra Large height & padding (`px-10 h-14 text-base`).
+4. **Button Width Modes (`buttonWidth`)**:
+   - `auto` (default): Fits to button content width, aligning within parent layout using `align` (`left`, `center`, `right`).
+   - `full`: Spans 100% width of parent container (`w-full`), centering label and icon contents.
+5. **Icon Registry & Positioning (`buttonIcon` & `iconPosition`)**:
+   - Integrated SVG icon set: `none`, `arrow-right`, `external-link`, `download`, `mail`, `play`, `star`, `heart`, `check`, `plus`, `search`, `github`.
+   - `iconPosition`: `left` (Icon before text label) or `right` (Icon after text label).
+6. **Hover Animations & Effects (`hoverEffect`)**:
+   - `none`: Standard opacity shift.
+   - `lift`: Translates upward slightly (`hover:-translate-y-0.5`) with elevated drop shadow.
+   - `scale`: Smooth zoom scale effect (`hover:scale-[1.03]`).
+   - `glow`: Adds intense glowing halo shadow matching accent color (`hover:shadow-[0_0_20px_rgba(2,169,247,0.5)]`).
+   - `shine`: Sweeping light sheen flash animation across button surface on hover (`overflow-hidden`).
+7. **Interactive Canvas Navigation vs Editor Selection**:
+   - In **Editor Mode** (`!previewMode`), clicking the Action Button on the canvas selects the element so the builder can edit its properties (label, link destination, icon, style) in the inspector panel without triggering navigation.
+   - In **Preview Mode** (`previewMode`), clicking an Action Button with an active `link` renders an interactive `<a>` element that follows the URL link (opening in same tab or new tab according to `linkTarget`).
+8. **Automatic Protocol Normalization (`formatHref`)**:
+   - Web URLs typed without explicit protocols (e.g. `youtube.com`, `google.com`, `twitter.com`) are automatically formatted with `https://` (rendering `https://youtube.com`).
+   - Internal links (`/dashboard`), anchor links (`#section`), and protocols (`mailto:`, `tel:`, `http://`, `https://`) are preserved without altering their structure.
+9. **Edge Compiler Synchronization**: The compiler engine outputs standard semantic `<a>` tags with `href`, `target`, `rel="noopener noreferrer"`, SVG icons, and CSS classes matching canvas preview 1:1. Responsive device overrides (`mobile` and `tablet`) generate media-query targeted CSS rules targeting `#el-id` and `#el-id-wrapper`.
+
+
 
 
