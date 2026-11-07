@@ -164,6 +164,46 @@ export function getCSSDeclaration(
     }
   }
 
+  if (key === "imageWidth") {
+    const widthMap: Record<string, string> = {
+      full: "100%",
+      "3/4": "75%",
+      "1/2": "50%",
+      "1/3": "33.333%",
+      auto: "auto",
+    };
+    return `width: ${widthMap[value] || value} !important;`;
+  }
+
+  if (key === "aspectRatio") {
+    const ratioMap: Record<string, string> = {
+      "16/9": "16 / 9",
+      "4/3": "4 / 3",
+      "1/1": "1 / 1",
+      "3/4": "3 / 4",
+      "21/9": "21 / 9",
+      auto: "auto",
+    };
+    return `aspect-ratio: ${ratioMap[value] || value} !important;`;
+  }
+
+  if (key === "objectFit") {
+    return `object-fit: ${value} !important;`;
+  }
+
+  if (key === "imageShadow") {
+    const shadowMap: Record<string, string> = {
+      none: "none",
+      sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+      glow: "0 0 20px rgba(2, 169, 247, 0.35)",
+    };
+    return `box-shadow: ${shadowMap[value] || value} !important;`;
+  }
+
   return "";
 }
 

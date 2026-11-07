@@ -6,6 +6,7 @@ import SpacingSection from "./sections/spacing-section";
 import LayoutSection from "./sections/layout-section";
 import TypographySection from "./sections/typography-section";
 import AppearanceSection from "./sections/appearance-section";
+import ContentInspectorTab from "./content-inspector-tab";
 
 interface StyleInspectorTabProps {
   activeDevice: "desktop" | "tablet" | "mobile";
@@ -13,9 +14,10 @@ interface StyleInspectorTabProps {
   onUpdateElement: (id: string, updates: Partial<CanvasElement>) => void;
   pageSettings: PageSettings;
   onShowToast?: (message: string, type: "success" | "warning" | "info") => void;
+  canvasElements?: CanvasElement[];
 }
 
-type StyleSubTab = "spacing" | "layout" | "typography" | "appearance";
+export type InspectorTabId = "content" | "spacing" | "layout" | "typography" | "appearance";
 
 export default function StyleInspectorTab({
   activeDevice,
@@ -23,8 +25,9 @@ export default function StyleInspectorTab({
   onUpdateElement,
   pageSettings,
   onShowToast,
+  canvasElements = [],
 }: StyleInspectorTabProps) {
-  const [activeSubTab, setActiveSubTab] = useState<StyleSubTab>("spacing");
+  const [activeSubTab, setActiveSubTab] = useState<InspectorTabId>("content");
 
   const themePalette = pageSettings.themePalette || {
     iceBlue: "#d4f0fc",
@@ -40,9 +43,9 @@ export default function StyleInspectorTab({
   // Auto-switch to available tab if element doesn't support the active tab
   useEffect(() => {
     if (activeSubTab === "layout" && !hasLayout) {
-      setActiveSubTab("spacing");
+      setActiveSubTab("content");
     } else if (activeSubTab === "typography" && !hasTypography) {
-      setActiveSubTab("spacing");
+      setActiveSubTab("content");
     }
   }, [selectedElement.id, selectedElement.type, hasLayout, hasTypography, activeSubTab]);
 
@@ -171,6 +174,21 @@ export default function StyleInspectorTab({
 
   const tabsConfig = [
     {
+      id: "content" as const,
+      label: "Content",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+          />
+        </svg>
+      ),
+      show: true,
+    },
+    {
       id: "spacing" as const,
       label: "Spacing",
       icon: (
@@ -248,7 +266,7 @@ export default function StyleInspectorTab({
         </div>
       )}
 
-      {/* Sub-Tab Navigation Bar for Component Style Options */}
+      {/* Merged Single-Row Icon Tab Navigation Bar */}
       <div className="flex border-b border-panel-border/40 bg-background/30 p-xs gap-[4px] rounded-lg border border-panel-border/40">
         {tabsConfig.map((tab) => (
           <button
@@ -269,6 +287,14 @@ export default function StyleInspectorTab({
 
       {/* Options Panel Container */}
       <div className="animate-slideDown">
+        {activeSubTab === "content" && (
+          <ContentInspectorTab
+            selectedElement={selectedElement}
+            onUpdateElement={onUpdateElement}
+            canvasElements={canvasElements}
+          />
+        )}
+
         {activeSubTab === "spacing" && (
           <SpacingSection
             getStyleValue={getStyleValue}

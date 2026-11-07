@@ -375,6 +375,94 @@ function compileElement(
     case "divider":
       return `<hr id="${el.id}" class="w-full my-4 border-t ${styleClasses}" ${styleAttr} />`;
 
+    case "image": {
+      const src = el.src || "";
+      const alt = escapeHtml(el.alt || "Image asset");
+      const caption = el.caption ? escapeHtml(el.caption) : "";
+
+      const widthMode = el.styles.imageWidth || "full";
+      const aspectRatio = el.styles.aspectRatio || "16/9";
+      const objectFit = el.styles.objectFit || "cover";
+      const borderRadius = el.styles.borderRadius || "rounded-xl";
+      const imageShadow = el.styles.imageShadow || "none";
+      const hoverEffect = el.styles.imageHover || "none";
+      const loading = el.styles.loading || "lazy";
+
+      const align = el.styles.align || "center";
+      const containerAlign = align === "center" ? "justify-center" : align === "right" ? "justify-end" : "justify-start";
+
+      const WIDTH_CLASSES: Record<string, string> = {
+        full: "w-full",
+        "3/4": "w-full md:w-3/4",
+        "1/2": "w-full md:w-1/2",
+        "1/3": "w-full md:w-1/3",
+        auto: "w-auto max-w-full",
+      };
+      const widthClass = WIDTH_CLASSES[widthMode] || "w-full";
+
+      const ASPECT_CLASSES: Record<string, string> = {
+        auto: "aspect-auto",
+        "16/9": "aspect-[16/9]",
+        "4/3": "aspect-[4/3]",
+        "1/1": "aspect-square",
+        "3/4": "aspect-[3/4]",
+        "21/9": "aspect-[21/9]",
+      };
+      const aspectClass = ASPECT_CLASSES[aspectRatio] || "aspect-auto";
+
+      const FIT_CLASSES: Record<string, string> = {
+        cover: "object-cover",
+        contain: "object-contain",
+        fill: "object-fill",
+        none: "object-none",
+        "scale-down": "object-scale-down",
+      };
+      const fitClass = FIT_CLASSES[objectFit] || "object-cover";
+
+      const SHADOW_CLASSES: Record<string, string> = {
+        none: "",
+        sm: "shadow-sm",
+        md: "shadow-md",
+        lg: "shadow-lg",
+        xl: "shadow-xl",
+        "2xl": "shadow-2xl",
+        glow: "shadow-[0_0_20px_rgba(2,169,247,0.35)]",
+      };
+      const shadowClass = SHADOW_CLASSES[imageShadow] || "";
+
+      let hoverClass = "transition-all duration-300";
+      if (hoverEffect === "zoom") {
+        hoverClass = "hover:scale-[1.03] transition-transform duration-300 ease-out";
+      } else if (hoverEffect === "lift") {
+        hoverClass = "hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-out";
+      } else if (hoverEffect === "glow") {
+        hoverClass = "hover:shadow-[0_0_25px_rgba(2,169,247,0.5)] transition-shadow duration-300";
+      } else if (hoverEffect === "grayscale") {
+        hoverClass = "grayscale hover:grayscale-0 transition-all duration-300 ease-out";
+      } else if (hoverEffect === "opacity") {
+        hoverClass = "hover:opacity-80 transition-opacity duration-300";
+      }
+
+      const imgTag = `<img src="${escapeHtml(src)}" alt="${alt}" loading="${loading}" class="w-full h-full block ${fitClass} ${hoverClass}" />`;
+      
+      const imgContent = el.link
+        ? `<a href="${escapeHtml(formatHref(el.link))}" target="${el.linkTarget === "_blank" ? "_blank" : "_self"}"${el.linkTarget === "_blank" ? ' rel="noopener noreferrer"' : ""} class="block w-full">${imgTag}</a>`
+        : imgTag;
+
+      const figcaptionHtml = caption
+        ? `<figcaption class="text-xs text-slate-500 mt-2 text-center font-medium italic leading-normal">${caption}</figcaption>`
+        : "";
+
+      return `<figure id="${el.id}" class="w-full flex ${containerAlign} ${styleClasses}" ${styleAttr}>
+        <div class="flex flex-col ${widthClass} items-${align === "right" ? "end" : align === "center" ? "center" : "start"}">
+          <div class="relative overflow-hidden w-full ${aspectClass} ${borderRadius} ${shadowClass}">
+            ${imgContent}
+          </div>
+          ${figcaptionHtml}
+        </div>
+      </figure>`;
+    }
+
     default:
       return "";
   }

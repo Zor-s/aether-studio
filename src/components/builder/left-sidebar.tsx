@@ -31,7 +31,7 @@ export default function LeftSidebar({
   onMoveElement = () => {},
 }: LeftSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<"all" | "layout" | "basic">("all");
+  const [activeCategory, setActiveCategory] = useState<"all" | "layout" | "basic" | "media">("all");
   const [activePanel, setActivePanel] = useState<"blocks" | "layers">("blocks");
   const [hoveredElement, setHoveredElement] = useState<{
     id: string;
@@ -49,7 +49,7 @@ export default function LeftSidebar({
   });
 
   return (
-    <aside className="w-sidebar-w border-r border-panel-border bg-panel flex flex-col shrink-0 relative select-none z-10 transition-colors duration-200">
+    <aside className="w-sidebar-w border-r border-panel-border bg-panel flex flex-col shrink-0 relative select-none z-40 transition-colors duration-200">
       {/* Sidebar Header & Search */}
       <div className="p-md border-b border-panel-border flex flex-col gap-sm shrink-0">
         <div className="flex justify-between items-center">
@@ -106,7 +106,7 @@ export default function LeftSidebar({
       {/* Category Pills */}
       {activePanel === "blocks" && (
         <div className="px-md py-sm border-b border-panel-border bg-background/50 flex gap-xs overflow-x-auto scrollbar-none shrink-0">
-          {(["all", "layout", "basic"] as const).map((cat) => (
+          {(["all", "layout", "basic", "media"] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}

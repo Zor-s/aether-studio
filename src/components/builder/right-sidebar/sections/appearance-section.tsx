@@ -326,7 +326,124 @@ export default function AppearanceSection({
           </div>
         )}
 
-        {["button", "section", "container", "grid-2", "blockquote"].includes(selectedElement.type) && (
+        {selectedElement.type === "image" && (
+          <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm animate-slideDown">
+            {/* Width & Alignment Grid */}
+            <div className="grid grid-cols-2 gap-sm">
+              <div className="flex flex-col gap-xs">
+                {renderLabel("imageWidth", "Image Width")}
+                <CustomSelect
+                  value={getStyleValue("imageWidth") || "full"}
+                  onChange={(val) => handleStyleChange("imageWidth", val)}
+                  options={[
+                    { value: "full", label: "Full Width (100%)" },
+                    { value: "3/4", label: "Three Quarters (75%)" },
+                    { value: "1/2", label: "Half Width (50%)" },
+                    { value: "1/3", label: "One Third (33%)" },
+                    { value: "auto", label: "Auto / Fit Content" },
+                  ]}
+                />
+              </div>
+
+              <div className="flex flex-col gap-xs">
+                {renderLabel("align", "Alignment")}
+                <CustomSelect
+                  value={getStyleValue("align") || "center"}
+                  onChange={(val) => handleStyleChange("align", val)}
+                  options={[
+                    { value: "left", label: "Align Left" },
+                    { value: "center", label: "Align Center" },
+                    { value: "right", label: "Align Right" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Aspect Ratio & Object Fit Grid */}
+            <div className="grid grid-cols-2 gap-sm">
+              <div className="flex flex-col gap-xs">
+                {renderLabel("aspectRatio", "Aspect Ratio")}
+                <CustomSelect
+                  value={getStyleValue("aspectRatio") || "16/9"}
+                  onChange={(val) => handleStyleChange("aspectRatio", val)}
+                  options={[
+                    { value: "16/9", label: "16:9 Widescreen" },
+                    { value: "4/3", label: "4:3 Standard" },
+                    { value: "1/1", label: "1:1 Square" },
+                    { value: "3/4", label: "3:4 Portrait" },
+                    { value: "21/9", label: "21:9 Ultrawide" },
+                    { value: "auto", label: "Auto (Original Ratio)" },
+                  ]}
+                />
+              </div>
+
+              <div className="flex flex-col gap-xs">
+                {renderLabel("objectFit", "Object Scaling")}
+                <CustomSelect
+                  value={getStyleValue("objectFit") || "cover"}
+                  onChange={(val) => handleStyleChange("objectFit", val)}
+                  options={[
+                    { value: "cover", label: "Cover (Crop to Fit)" },
+                    { value: "contain", label: "Contain (Fit Inside)" },
+                    { value: "fill", label: "Fill (Stretch)" },
+                    { value: "none", label: "None (Original Size)" },
+                    { value: "scale-down", label: "Scale Down" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Elevation / Drop Shadow */}
+            <div className="flex flex-col gap-xs">
+              {renderLabel("imageShadow", "Drop Shadow Elevation")}
+              <CustomSelect
+                value={getStyleValue("imageShadow") || "none"}
+                onChange={(val) => handleStyleChange("imageShadow", val)}
+                options={[
+                  { value: "none", label: "Flat (No Shadow)" },
+                  { value: "sm", label: "Subtle Soft (SM)" },
+                  { value: "md", label: "Medium Depth (MD)" },
+                  { value: "lg", label: "Large Shadow (LG)" },
+                  { value: "xl", label: "Extra Large (XL)" },
+                  { value: "2xl", label: "Dramatic Depth (2XL)" },
+                  { value: "glow", label: "Cyan Glow Halo" },
+                ]}
+              />
+            </div>
+
+            {/* Hover Effects */}
+            <div className="flex flex-col gap-xs">
+              {renderLabel("imageHover", "Hover Animation")}
+              <CustomSelect
+                value={getStyleValue("imageHover") || "none"}
+                onChange={(val) => handleStyleChange("imageHover", val)}
+                options={[
+                  { value: "none", label: "Static (No Hover)" },
+                  { value: "zoom", label: "Zoom Scale (103%)" },
+                  { value: "lift", label: "Elevate Lift + Shadow" },
+                  { value: "glow", label: "Glowing Cyan Halo" },
+                  { value: "grayscale", label: "Grayscale to Color" },
+                  { value: "opacity", label: "Soft Opacity Fade" },
+                ]}
+              />
+            </div>
+
+            {/* Loading Strategy */}
+            <div className="flex flex-col gap-xs">
+              {renderLabel("loading", "Image Loading Mode")}
+              <CustomSelect
+                value={getStyleValue("loading") || "lazy"}
+                onChange={(val) => handleStyleChange("loading", val)}
+                options={[
+                  { value: "lazy", label: "Lazy Load (Optimized for speed)" },
+                  { value: "eager", label: "Eager Load (Load immediately)" },
+                ]}
+              />
+            </div>
+          </div>
+        )}
+
+        {["button", "section", "container", "grid-2", "blockquote", "image"].includes(selectedElement.type) && (
           <div className="flex items-center justify-between gap-sm border-t border-panel-border/30 pt-sm">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-foreground leading-snug">

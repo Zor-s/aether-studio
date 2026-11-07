@@ -116,9 +116,9 @@ Aether Studio supports page-level style overrides and layout alignment configura
    - **`padding`**: Sets the outer body spacing margins surrounding the main layout container (options map to spacing tokens: `space-none` to `space-2xl`).
    - **`gap`**: Defines the sibling vertical margins between root elements (options map to spacing tokens: `space-none` to `space-2xl`).
 
-3. **Page Settings & Component Inspector Sub-Tab Layout**:
-   - **Sub-Tab Navigation Bar**: Both global Page Settings and component-level Style Inspector panels feature sub-tab navigation bars (`Spacing`, `Layout`, `Type`, `Style`), allowing builders to switch between option categories in a clean, non-collapsible 1-click tabbed layout.
-   - **Dynamic Tab Filtering**: Component inspectors automatically filter available sub-tabs based on the selected element type (e.g. `Layout` shows for section/container/grid blocks; `Type` shows for headline/subheading/paragraph/button/blockquote/list blocks). All underlying style logic, device overrides, and color pickers remain 100% synchronized.
+ 3. **Unified Component Inspector Icon Tab Navigation**:
+    - **Single-Row Icon Tab Bar**: Component inspector options merge all controls into a single, clean icon navigation tab bar (`Content`, `Spacing`, `Layout`, `Type`, `Style`), eliminating redundant nested tab tiers for maximum visual clarity.
+    - **Dynamic Tab Filtering**: Component inspectors automatically filter available tabs based on the selected element type (e.g. `Layout` shows for section/container/grid blocks; `Type` shows for headline/subheading/paragraph/button/blockquote/list blocks; `Content` handles text, image, link, and container parentage). All underlying style logic, device overrides, and color pickers remain 100% synchronized.
 
 ---
 
@@ -198,7 +198,7 @@ Since Aether Studio is an edge-optimized dashboard and canvas creator, the layou
 
 ### B. The Canvas Frame (Responsive Preview Engine)
 To give builders live visual feedback on mobile, tablet, and desktop devices without relying on browser window resizing, the middle editor canvas renders the generated HTML document inside an iframe enclosed in a device wrapper:
-- **Desktop Mode**: Features a desktop PC monitor frame bezel (`border-[6px] sm:border-[10px] border-dark-slate rounded-2xl shadow-2xl`) complete with a browser window header bar displaying window control buttons (red, yellow, green) and a mock URL location field (`https://workspace.aether.studio/desktop-preview`). In preview mode, redundant outer canvas padding is removed (`p-0`), and the iframe height dynamically auto-measures to the document content scroll height (`doc.body.scrollHeight`), rendering full visual quality without 150px height collapse.
+- **Desktop Mode**: Features a sleek, modern desktop browser window frame (`rounded-xl border border-panel-border/30 shadow-xl bg-dark-slate`) complete with a browser window header bar displaying window control buttons (red, yellow, green) and a mock URL location field (`https://workspace.aether.studio/desktop-preview`). The page background color (`backgroundColor`) is isolated to the inner viewport container below the header bar to prevent subpixel corner bleed. In preview mode, redundant outer canvas padding is removed (`p-0`), and the iframe height dynamically auto-measures to the document content scroll height (`doc.body.scrollHeight`), rendering full visual quality without 150px height collapse.
 - **Tablet Mode**: Iframe wrapper width locked to `768px` (iPad width), centered with a device drop shadow and camera bezel. In preview mode, content scrolls smoothly inside the tablet frame.
 - **Mobile Mode**: Iframe wrapper width locked to `375px` (iPhone width), centered with a smartphone frame and top notch speaker grille. In preview mode, content scrolls smoothly inside the smartphone frame.
 - **Live Preview Viewport Switcher**: In Live Interactive Preview Mode, the header viewport control bar displays a pulsing live preview status indicator (`Live Interactive Preview Mode`) alongside desktop, tablet, and mobile viewport buttons, enabling real-time device switching during interactive preview sessions.
@@ -268,7 +268,7 @@ src/
 2. **Interactive States**: Every button or selection block must transition using `transition-all duration-200 ease-in-out` with subtle scale highlights or background shifts.
 3. **Outline States & Outside Spacing Indicators**: Elements inside the canvas render a precise 1px dashed Primary Cyan inset outline (`outline outline-1 outline-dashed outline-cyan-active/70 -outline-offset-1`) during editing hover that transitions seamlessly to a 2px solid Primary Cyan inset border (`outline outline-2 outline-cyan-active -outline-offset-2`) when selected. Utilizing inset offsets (`-outline-offset-2` and `-outline-offset-1`) guarantees the outlines sit inside the element's border-box perimeter, ensuring 100% visible focus borders without size discrepancies, guideline clutter, or outline clipping under `overflow-hidden` containers or zero-padding/margin configurations. Both hover and selection overlays display an attached indicator badge detailing the element type alongside its configured margin and padding (e.g. `M: md (16px) • P: sm (8px)`). The indicator badge and action toolbar strictly render **outside** the element box—positioned 8px above the top border (`-top-8`) by default, or dynamically flipping 4px below the bottom border (`top-full mt-1.5`) when an element sits flush against the topmost canvas edge (`isTopEdge`). This guarantees 100% badge visibility without obscuring text inside the element or adding fake padding to the canvas.
 4. **History Stack Dropdown**: Integrated directly into the top header navbar adjacent to the Undo/Redo buttons. Renders a compact state selector pill (`History (X/Y)`) that stays visible across all history stack lengths and opens an overlay dropdown menu containing scrollable time-travel steps dynamically labeled based on elements added, deleted, edited, or reordered. Automatically synchronized during `localStorage` hydration and `BroadcastChannel` multi-tab state sync.
-5. **Left Sidebar Hover Previews**: Hovering any registry element card triggers a floating preview popover adjacent to the sidebar (`left-full ml-sm w-[280px]`). The popover uses the `animate-scaleIn` entry transition and centers its `top` position relative to the hovered item, clamped dynamically to remain within the visible vertical container height. It renders specific HTML mockups with custom, theme-compliant CSS keyframe animations.
+5. **Left Sidebar Hover Previews**: Hovering any registry element card triggers a floating preview popover adjacent to the sidebar (`left-full ml-sm w-[280px]`). The popover uses the `animate-scaleIn` entry transition and centers its `top` position relative to the hovered item, clamped dynamically to remain within the visible vertical container height. To ensure popovers stack cleanly above the Workspace Canvas top window bar (`z-30`), both sidebars (`LeftSidebar` and `RightSidebar`) enforce a `z-40` container stacking level. It renders specific HTML mockups with custom, theme-compliant CSS keyframe animations.
 6. **Layers Panel**: The sidebar's Layers toggle exposes a page-root tree. Selecting a node selects its canvas element; nodes can be renamed, duplicated, and moved relative to siblings. Parent-child relationships use `parentId`, and expandable rows expose nested structures when present.
 7. **Custom Style Dropdowns**: To prevent native OS select element rendering glitches under browser zoom-out levels, and to maintain theme-palette compliance across dark/light modes, all styling selection controls in the sidebar must utilize custom DOM dropdown menus (`CustomSelect`) with absolute-positioned panels, full-screen backdrop click overlays for close handling, and dynamic viewport-based upward/downward positioning to prevent options list clipping when space below is limited.
 8. Custom Color Pickers: To ensure a premium user experience and prevent native browser color picker dialog rendering glitches, all color selection controls must utilize the custom `ColorPicker` component. This component features an interactive HSV saturation-value area, hue/alpha sliders, format inputs (HEX, RGB, HSL), standard color swatches, recent colors saved in localStorage, and theme palette selections. It must render its popover using a React Portal to prevent layout clipping inside scrollable sidebars, and dynamically position itself near the trigger element. To ensure fluid 60fps interaction during drags and slides, the color picker uses local state tracking (`localHsva`) for the active drag value. Updates to the parent element styles are throttled (using a trailing-edge throttle of 60ms) to prevent heavy canvas re-renders from blocking browser input events, while final color values are instantly flushed upon drag completion (`mouseup`/`touchend`).
@@ -449,6 +449,33 @@ To support call-to-action buttons, link destinations, brand buttons, and interac
    - Web URLs typed without explicit protocols (e.g. `youtube.com`, `google.com`, `twitter.com`) are automatically formatted with `https://` (rendering `https://youtube.com`).
    - Internal links (`/dashboard`), anchor links (`#section`), and protocols (`mailto:`, `tel:`, `http://`, `https://`) are preserved without altering their structure.
 9. **Edge Compiler Synchronization**: The compiler engine outputs standard semantic `<a>` tags with `href`, `target`, `rel="noopener noreferrer"`, SVG icons, and CSS classes matching canvas preview 1:1. Responsive device overrides (`mobile` and `tablet`) generate media-query targeted CSS rules targeting `#el-id` and `#el-id-wrapper`.
+
+### I. Image Component (`image`) Architecture, Options & Defensive Controls
+To support high-res visual assets, banners, hero graphics, team photos, and portfolio media, the Image component (`type: "image"`) provides full image controls and responsive options:
+1. **Image Source & Unsplash Quick Presets (`src`)**:
+   - Accepts custom HTTPS image URLs from any CDN or hosting provider.
+   - Includes 6 built-in Unsplash presets in the Content Inspector (`Tech Node`, `Architecture`, `Nature Landscape`, `Portrait Person`, `Abstract Gradient`, `Minimal Modern`) for instant 1-click sample insertion.
+   - Renders a clean fallback placeholder on the canvas if the URL is empty or fails to load, allowing builders to retry or fix the source URL without breaking the editor.
+2. **Alt Text & SEO (`alt`)**:
+   - Configurable alt text for search engine optimization and screen reader accessibility.
+3. **Figure Caption (`caption`)**:
+   - Optional caption text rendered beneath the image as a styled `<figcaption>` element.
+4. **Action Destination Link (`link` & `linkTarget`)**:
+   - Clicking an image can navigate to a specified URL, opening in the same tab (`_self`) or a new window (`_blank` with `rel="noopener noreferrer"`).
+5. **Aspect Ratio Controls (`aspectRatio`)**:
+   - Options: `16/9` (Widescreen), `4/3` (Standard), `1/1` (Square), `3/4` (Portrait), `21/9` (Ultrawide), and `auto` (Original image aspect ratio).
+6. **Object Fit Modes (`objectFit`)**:
+   - Options: `cover` (Crop to fill container), `contain` (Fit entirely inside without cropping), `fill` (Stretch to fill), `none` (Keep original size), `scale-down`.
+7. **Width & Alignment (`imageWidth` & `align`)**:
+   - `imageWidth`: `full` (100%), `3/4` (75%), `1/2` (50%), `1/3` (33%), `auto` (Fit content).
+   - `align`: `left`, `center`, `right`.
+8. **Drop Shadow Elevation (`imageShadow`)**:
+   - Options: `none`, `sm` (Subtle), `md` (Medium), `lg` (Large), `xl` (Extra Large), `2xl` (Dramatic), `glow` (Glowing Cyan Halo).
+9. **Hover Animations & Effects (`imageHover`)**:
+   - Options: `none` (Static), `zoom` (Smooth scale 103%), `lift` (Elevate upward + drop shadow), `glow` (Glowing Cyan halo), `grayscale` (Grayscale to full color on hover), `opacity` (Soft fade).
+10. **Image Loading Mode (`loading`)**:
+    - `lazy` (Optimized lazy loading for fast page loads) or `eager` (Immediate rendering for above-the-fold hero images).
+11. **Edge Compiler Synchronization**: The compiler converts image elements into standard `<figure>`, `<a href="...">`, `<img src="..." alt="...">`, and `<figcaption>` tags with responsive CSS style rules and media-query overrides.
 
 
 

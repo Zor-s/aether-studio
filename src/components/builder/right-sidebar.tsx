@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { CanvasElement, PageSettings } from "@/types/builder";
 import PageSettingsTab from "./right-sidebar/page-settings-tab";
 import StyleInspectorTab from "./right-sidebar/style-inspector-tab";
-import ContentInspectorTab from "./right-sidebar/content-inspector-tab";
 
 const ALL_FONTS_STYLESHEET =
   "https://fonts.googleapis.com/css2?family=Inter&family=Roboto&family=Open+Sans&family=Montserrat&family=Lato&family=Poppins&family=Oswald&family=Raleway&family=Nunito&family=Georgia&family=Playfair+Display&family=Lora&family=Merriweather&family=PT+Sans&family=Rubik&family=Ubuntu&family=Outfit&family=Syne&family=Cormorant+Garamond&family=Cabin&family=Archivo&family=Roboto+Mono&family=Source+Code+Pro&family=Courier+Prime&family=Space+Grotesk&display=swap";
@@ -48,11 +47,9 @@ export default function RightSidebar({
   onDeselect,
   canvasElements = [],
 }: RightSidebarProps) {
-  const [activeTab, setActiveTab] = useState<"styles" | "content">("styles");
-
   if (!selectedElement) {
     return (
-      <aside className="w-sidebar-w border-l border-panel-border bg-panel flex flex-col shrink-0 overflow-hidden select-none z-10 transition-colors duration-200">
+      <aside className="w-sidebar-w border-l border-panel-border bg-panel flex flex-col shrink-0 overflow-hidden select-none z-40 transition-colors duration-200">
         {/* Header */}
         <div className="p-md border-b border-panel-border shrink-0">
           <div className="flex justify-between items-center mb-xs">
@@ -74,12 +71,12 @@ export default function RightSidebar({
   }
 
   return (
-    <aside className="w-sidebar-w border-l border-panel-border bg-panel flex flex-col shrink-0 overflow-hidden select-none z-10 transition-colors duration-200">
+    <aside className="w-sidebar-w border-l border-panel-border bg-panel flex flex-col shrink-0 overflow-hidden select-none z-40 transition-colors duration-200">
       {/* Load Google Fonts stylesheet so the inspector list items can preview the fonts */}
       <link rel="stylesheet" href={ALL_FONTS_STYLESHEET} />
       {/* Element Inspector Header */}
       <div className="p-md border-b border-panel-border shrink-0">
-        <div className="flex justify-between items-center mb-sm">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-xs font-semibold">
             <span className="text-[10px] uppercase font-extrabold px-sm py-[2px] rounded bg-cyan-active/15 text-cyan-active tracking-wider">
               {selectedElement.type}
@@ -97,49 +94,18 @@ export default function RightSidebar({
             </button>
           )}
         </div>
-
-        {/* Settings / Style Tab Toggles */}
-        <div className="flex bg-background border border-panel-border rounded-lg p-[3px] shadow-inner">
-          <button
-            onClick={() => setActiveTab("styles")}
-            className={`flex-1 py-xs rounded-md text-xs font-bold transition-all duration-200 cursor-pointer ${
-              activeTab === "styles"
-                ? "bg-panel text-cyan-active shadow-sm"
-                : "text-text-muted hover:text-foreground"
-            }`}
-          >
-            Styles
-          </button>
-          <button
-            onClick={() => setActiveTab("content")}
-            className={`flex-1 py-xs rounded-md text-xs font-bold transition-all duration-200 cursor-pointer ${
-              activeTab === "content"
-                ? "bg-panel text-cyan-active shadow-sm"
-                : "text-text-muted hover:text-foreground"
-            }`}
-          >
-            Content
-          </button>
-        </div>
       </div>
 
       {/* Configuration Controls (Scrollable) */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-md flex flex-col gap-lg bg-panel">
-        {activeTab === "styles" ? (
-          <StyleInspectorTab
-            activeDevice={activeDevice}
-            selectedElement={selectedElement}
-            onUpdateElement={onUpdateElement}
-            pageSettings={pageSettings}
-            onShowToast={onShowToast}
-          />
-        ) : (
-          <ContentInspectorTab
-            selectedElement={selectedElement}
-            onUpdateElement={onUpdateElement}
-            canvasElements={canvasElements}
-          />
-        )}
+        <StyleInspectorTab
+          activeDevice={activeDevice}
+          selectedElement={selectedElement}
+          onUpdateElement={onUpdateElement}
+          pageSettings={pageSettings}
+          onShowToast={onShowToast}
+          canvasElements={canvasElements}
+        />
       </div>
     </aside>
   );

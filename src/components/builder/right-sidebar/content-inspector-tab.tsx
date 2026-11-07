@@ -329,6 +329,87 @@ export default function ContentInspectorTab({
           content={selectedElement.content}
           onChange={(newVal) => handleContentChange("content", newVal)}
         />
+      ) : selectedElement.type === "image" ? (
+        <div className="flex flex-col gap-md">
+          {/* Image URL Input */}
+          <div className="flex flex-col gap-xs">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-foreground">Image Source URL</label>
+              {selectedElement.src && (
+                <button
+                  type="button"
+                  onClick={() => handleContentChange("src", "")}
+                  className="text-[9px] font-semibold text-red-400 hover:text-red-600 cursor-pointer"
+                >
+                  Clear URL
+                </button>
+              )}
+            </div>
+            <input
+              type="text"
+              value={selectedElement.src || ""}
+              onChange={(e) => handleContentChange("src", e.target.value)}
+              placeholder="https://images.unsplash.com/..."
+              className="w-full h-10 px-sm rounded-lg border border-panel-border bg-background text-xs text-foreground placeholder-text-muted focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active transition-all duration-200 font-mono"
+            />
+            <span className="text-[9px] text-text-muted">Enter a direct image URL (HTTPS) from Unsplash, CDN, or hosting provider.</span>
+          </div>
+
+          {/* Quick Unsplash Presets */}
+          <div className="flex flex-col gap-xs">
+            <label className="text-[10px] font-bold text-foreground uppercase tracking-wider">Quick Unsplash Presets</label>
+            <div className="grid grid-cols-3 gap-xs">
+              {[
+                { name: "Tech Node", url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80" },
+                { name: "Architecture", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80" },
+                { name: "Nature Landscape", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&auto=format&fit=crop&q=80" },
+                { name: "Portrait Person", url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&auto=format&fit=crop&q=80" },
+                { name: "Abstract Gradient", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80" },
+                { name: "Minimal Modern", url: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=1200&auto=format&fit=crop&q=80" },
+              ].map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => handleContentChange("src", preset.url)}
+                  className={`py-xs px-xs text-[9px] font-bold rounded border transition-all truncate cursor-pointer ${
+                    selectedElement.src === preset.url
+                      ? "bg-cyan-active text-white border-cyan-active shadow-sm"
+                      : "bg-background border-panel-border text-foreground hover:border-cyan-active/60 hover:bg-panel"
+                  }`}
+                  title={preset.name}
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Alt Text Input */}
+          <div className="flex flex-col gap-xs border-t border-panel-border/30 pt-sm">
+            <label className="text-xs font-bold text-foreground">Alt Text (Accessibility & SEO)</label>
+            <input
+              type="text"
+              value={selectedElement.alt || ""}
+              onChange={(e) => handleContentChange("alt", e.target.value)}
+              placeholder="e.g. Developer workstation with dual monitors"
+              className="w-full h-9 px-sm rounded-lg border border-panel-border bg-background text-xs text-foreground placeholder-text-muted focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active transition-all duration-200"
+            />
+            <span className="text-[9px] text-text-muted">Screen readers and search engines use alt text to describe the image content.</span>
+          </div>
+
+          {/* Caption Input */}
+          <div className="flex flex-col gap-xs border-t border-panel-border/30 pt-sm">
+            <label className="text-xs font-bold text-foreground">Image Caption (Optional)</label>
+            <textarea
+              value={selectedElement.caption || ""}
+              onChange={(e) => handleContentChange("caption", e.target.value)}
+              rows={2}
+              placeholder="e.g. Figure 1.1 — High availability network topology"
+              className="w-full p-sm rounded-lg border border-panel-border bg-background text-xs text-foreground placeholder-text-muted focus:outline-none focus:border-cyan-active focus:ring-1 focus:ring-cyan-active transition-all duration-200 resize-none"
+            />
+            <span className="text-[9px] text-text-muted">Displays as a styled caption under the image block.</span>
+          </div>
+        </div>
       ) : (
         !["section", "container", "grid-2"].includes(selectedElement.type) && (
           <div className="flex flex-col gap-xs">
@@ -357,8 +438,8 @@ export default function ContentInspectorTab({
         </div>
       )}
 
-      {/* Link URLs & Options (Visible on buttons) */}
-      {["button"].includes(selectedElement.type) && (
+      {/* Link URLs & Options (Visible on buttons and images) */}
+      {["button", "image"].includes(selectedElement.type) && (
         <div className="flex flex-col gap-sm border-t border-panel-border/30 pt-sm">
           <div className="flex flex-col gap-xs">
             <label className="text-xs font-bold text-foreground">Action Destination Link</label>
@@ -382,7 +463,7 @@ export default function ContentInspectorTab({
               ]}
             />
             <span className="text-[9px] text-text-muted">
-              Choose whether clicking the action button opens the URL in the current tab or a new tab.
+              Choose whether clicking the {selectedElement.type} opens the URL in the current tab or a new tab.
             </span>
           </div>
         </div>

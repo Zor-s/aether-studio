@@ -5,6 +5,9 @@ export interface CanvasElement {
   type: string;
   content: string;
   category: "layout" | "basic" | "media" | "forms";
+  src?: string;
+  alt?: string;
+  caption?: string;
   styles: {
     padding?: string;
     margin?: string;
@@ -62,6 +65,12 @@ export interface CanvasElement {
     iconPosition?: "left" | "right";
     hoverEffect?: "none" | "lift" | "scale" | "glow" | "shine";
     buttonState?: "normal" | "disabled" | "loading";
+    imageWidth?: "full" | "3/4" | "1/2" | "1/3" | "auto";
+    aspectRatio?: "auto" | "16/9" | "4/3" | "1/1" | "3/4" | "21/9";
+    objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
+    imageShadow?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "glow";
+    imageHover?: "none" | "zoom" | "lift" | "glow" | "grayscale" | "opacity";
+    loading?: "lazy" | "eager";
     mobile?: {
       padding?: string;
       margin?: string;
@@ -119,6 +128,12 @@ export interface CanvasElement {
       iconPosition?: "left" | "right";
       hoverEffect?: "none" | "lift" | "scale" | "glow" | "shine";
       buttonState?: "normal" | "disabled" | "loading";
+      imageWidth?: "full" | "3/4" | "1/2" | "1/3" | "auto";
+      aspectRatio?: "auto" | "16/9" | "4/3" | "1/1" | "3/4" | "21/9";
+      objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
+      imageShadow?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "glow";
+      imageHover?: "none" | "zoom" | "lift" | "glow" | "grayscale" | "opacity";
+      loading?: "lazy" | "eager";
     };
     tablet?: {
       padding?: string;
@@ -177,6 +192,12 @@ export interface CanvasElement {
       iconPosition?: "left" | "right";
       hoverEffect?: "none" | "lift" | "scale" | "glow" | "shine";
       buttonState?: "normal" | "disabled" | "loading";
+      imageWidth?: "full" | "3/4" | "1/2" | "1/3" | "auto";
+      aspectRatio?: "auto" | "16/9" | "4/3" | "1/1" | "3/4" | "21/9";
+      objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
+      imageShadow?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "glow";
+      imageHover?: "none" | "zoom" | "lift" | "glow" | "grayscale" | "opacity";
+      loading?: "lazy" | "eager";
     };
   };
   link?: string;

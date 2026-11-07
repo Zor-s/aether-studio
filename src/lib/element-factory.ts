@@ -257,6 +257,29 @@ export function createNewElement(
         },
       };
 
+    case "image":
+      return {
+        id: baseId,
+        type: "image",
+        category: "media",
+        content: "",
+        src: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80",
+        alt: "High performance digital architecture node showcase",
+        caption: "Aether Studio — Digital Edge Workspace Node",
+        styles: {
+          margin: "space-md",
+          padding: "space-none",
+          align: "center",
+          imageWidth: "full",
+          aspectRatio: "16/9",
+          objectFit: "cover",
+          borderRadius: "rounded-xl",
+          imageShadow: "md",
+          imageHover: "zoom",
+          loading: "lazy",
+        },
+      };
+
     default:
       return null;
   }

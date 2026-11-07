@@ -12,6 +12,7 @@ import {
 import CanvasSelectionOverlay from "./canvas-selection-overlay";
 import BlockquoteElement from "./elements/blockquote-element";
 import AtomicElement from "./elements/atomic-elements";
+import ImageElement from "./elements/image-element";
 
 interface CanvasElementRendererProps {
   element: CanvasElement;
@@ -285,6 +286,16 @@ export default function CanvasElementRenderer({
           element={el}
           activeDevice={activeDevice}
           themePalette={themePalette}
+        />
+      )}
+
+      {/* Image Element */}
+      {el.type === "image" && (
+        <ImageElement
+          element={el}
+          activeDevice={activeDevice}
+          customStyles={customStyles}
+          previewMode={previewMode}
         />
       )}
 

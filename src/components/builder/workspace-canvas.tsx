@@ -139,14 +139,14 @@ export default function WorkspaceCanvas({
 
   const getDeviceFrameStyles = () => {
     if (activeDevice === "mobile") {
-      return "w-[375px] max-w-full h-full sm:h-[640px] max-h-full rounded-[28px] sm:rounded-[40px] border-[8px] sm:border-[12px] border-dark-slate shadow-2xl relative bg-panel flex flex-col shrink-0 overflow-hidden";
+      return "w-[375px] max-w-full h-full sm:h-[640px] max-h-full rounded-[28px] sm:rounded-[40px] border-[8px] sm:border-[12px] border-dark-slate shadow-2xl relative bg-dark-slate flex flex-col shrink-0 overflow-hidden";
     }
     if (activeDevice === "tablet") {
-      return "w-[768px] min-w-[768px] h-full sm:h-[900px] max-h-full rounded-[18px] sm:rounded-[24px] border-[6px] sm:border-[10px] border-dark-slate shadow-xl relative bg-panel flex flex-col shrink-0 overflow-hidden";
+      return "w-[768px] min-w-[768px] h-full sm:h-[900px] max-h-full rounded-[18px] sm:rounded-[24px] border-[6px] sm:border-[10px] border-dark-slate shadow-xl relative bg-dark-slate flex flex-col shrink-0 overflow-hidden";
     }
     return previewMode
-      ? "w-full min-w-[1024px] lg:min-w-0 h-full bg-panel shadow-sm flex flex-col shrink-0 overflow-hidden"
-      : "w-full min-w-[1024px] lg:min-w-0 h-full rounded-2xl border-[6px] sm:border-[10px] border-dark-slate shadow-2xl relative bg-panel flex flex-col shrink-0 overflow-hidden";
+      ? "w-full min-w-[1024px] lg:min-w-0 h-full bg-dark-slate shadow-sm flex flex-col shrink-0 overflow-hidden"
+      : "w-full min-w-[1024px] lg:min-w-0 h-full rounded-xl border border-panel-border/30 shadow-xl relative bg-dark-slate flex flex-col shrink-0 overflow-hidden";
   };
 
   return (
@@ -178,14 +178,6 @@ export default function WorkspaceCanvas({
             "--brand-cyan-active": themePalette.cyanActive,
             "--brand-deep-teal": themePalette.deepTeal,
             "--brand-dark-slate": themePalette.darkSlate,
-            backgroundColor: mapColor(
-              pageSettings.backgroundColor || "#ffffff",
-              themePalette
-            ),
-            color: mapColor(pageSettings.textColor || "#01303f", themePalette),
-            fontFamily: pageSettings.fontFamily
-              ? `'${pageSettings.fontFamily}', sans-serif`
-              : undefined,
           } as React.CSSProperties
         }
       >
@@ -236,6 +228,14 @@ export default function WorkspaceCanvas({
           style={{
             padding: previewMode ? 0 : (PAGE_PADDING_MAP[pageSettings.padding ?? ""] ?? "2rem 1.5rem"),
             minHeight: activeDevice === "desktop" ? "100%" : undefined,
+            backgroundColor: mapColor(
+              pageSettings.backgroundColor || "#ffffff",
+              themePalette
+            ),
+            color: mapColor(pageSettings.textColor || "#01303f", themePalette),
+            fontFamily: pageSettings.fontFamily
+              ? `'${pageSettings.fontFamily}', sans-serif`
+              : undefined,
           }}
         >
           <div className={`w-full h-full ${previewMode ? "flex-1 flex flex-col" : "flex flex-col"}`}>
